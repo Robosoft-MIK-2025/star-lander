@@ -1,0 +1,27 @@
+Panels:
+  - Class: rviz_default_plugins/Image
+    Name: Camera Image
+    Topic: /image_raw  # Изображение с камеры
+  - Class: rviz_default_plugins/TF
+    Name: TF Frames
+    Show Axes: true
+    Show Names: true
+    Marker Scale: 0.2  # Размер осей
+    Frame Timeout: 0.1
+Visualization Manager:
+  Global Options:
+    Fixed Frame: camera_link  # Рамка камеры (из TF, подставьте если иначе)
+  Displays:
+    - Class: rviz_default_plugins/Image
+      Topic: /image_raw
+      Name: Raw Image
+    - Class: rviz_default_plugins/TF
+      Name: TF
+      All Frames Enabled: true
+Views:
+  Current View:
+    Class: rviz_default_plugins/Orbit
+    Target Frame: camera_link
+
+
+

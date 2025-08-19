@@ -1,0 +1,26 @@
+image_width: 640
+image_height: 480
+camera_name: bkx-usb2.0_2mp_camera:_bkx-usb2 # narrow_stereo? bkx-usb2.0_2mp_camera:_bkx-usb2? camera?
+camera_matrix:
+  rows: 3
+  cols: 3
+  data: [433.12814,   0.     , 310.63799,
+           0.     , 434.29784, 241.15219,
+           0.     ,   0.     ,   1.     ]
+distortion_model: plumb_bob
+distortion_coefficients:
+  rows: 1
+  cols: 5
+  data: [0.086139, -0.123495, -0.002743, -0.001989, 0.000000]
+rectification_matrix:
+  rows: 3
+  cols: 3
+  data: [1., 0., 0.,
+         0., 1., 0.,
+         0., 0., 1.]
+projection_matrix:
+  rows: 3
+  cols: 4
+  data: [436.86319,   0.     , 308.21328,   0.     ,
+           0.     , 440.30713, 239.47305,   0.     ,
+           0.     ,   0.     ,   1.     ,   0.     ]

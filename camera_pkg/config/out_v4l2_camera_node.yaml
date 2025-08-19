@@ -1,0 +1,46 @@
+/v4l2_camera_node:
+  ros__parameters:
+    auto_exposure: 3
+    backlight_compensation: 0
+    brightness: 0
+    camera_frame_id: camera_link
+    camera_info_url: file:///root/ros2_ws/src/camera_pkg/config/ost.yaml
+    contrast: 2
+    exposure_time_absolute: 312
+    focus_absolute: 0
+    focus_automatic_continuous: true
+    gamma: 100
+    hue: 0
+    image_raw:
+      enable_pub_plugins:
+      - image_transport/compressedDepth
+      - image_transport/compressed
+      - image_transport/raw
+      - image_transport/theora
+      format: jpeg
+      jpeg_quality: 95
+      png_level: 3
+      tiff:
+        res_unit: inch
+        xdpi: -1
+        ydpi: -1
+    image_size:
+    - 640
+    - 480
+    output_encoding: yuv422_yuy2
+    pixel_format: YUYV
+    power_line_frequency: 1
+    qos_overrides:
+      /parameter_events:
+        publisher:
+          depth: 1000
+          durability: volatile
+          history: keep_last
+          reliability: reliable
+    saturation: 44
+    sharpness: 2
+    use_sim_time: false
+    video_device: /dev/video0
+    white_balance_automatic: true
+    white_balance_temperature: 4600
+
