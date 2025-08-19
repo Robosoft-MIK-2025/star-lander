@@ -30,4 +30,11 @@ def generate_launch_description():
             }],
             # arguments=['--ros-args', '--log-level', 'v4l2_camera_node:=debug']
         ),
+
+        Node(
+            package='tf2_ros',
+            executable='static_transform_publisher',
+            name='static_tf_camera_link_next_to_map',
+            arguments=['0.25', '0.25', '0', '0', '0', '0', 'map', 'camera_link']
+        )
     ])
