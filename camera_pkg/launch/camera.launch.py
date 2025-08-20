@@ -37,4 +37,5 @@ def generate_launch_description():
             name='static_tf_camera_link_next_to_map',
             arguments=['0.25', '0.25', '0', '0', '0', '0', 'map', 'camera_link']
         )
+        # ros2 run tf2_ros static_transform_publisher 0.25 0.25 0 0 0 0 map camera_link
     ])
