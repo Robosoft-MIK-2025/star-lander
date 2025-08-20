@@ -24,5 +24,5 @@ services:
     stdin_open: true  # dsocker run -i
     tty: true        # docker run -t
     working_dir: /root/ros2_ws
-    command: ['ros2 launch camera_pkg camera.launch.py']
+    command: []
     restart: always
