@@ -108,6 +108,3 @@ mkdir -p $XDG_RUNTIME_DIR
 chmod 700 $XDG_RUNTIME_DIR
 
 export USER=root
-
-cd /root/ros2_ws
-source install/setup.bash
