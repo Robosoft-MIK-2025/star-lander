@@ -26,6 +26,18 @@ def generate_launch_description():
                 ])
             )
         ),
+
+        # Запуск Tf_listener_and_command_giver
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                PathJoinSubstitution([
+                    FindPackageShare('tf_pkg'),
+                    'launch',
+                    'drone_tf_command_publisher.launch.py'
+                ])
+            )
+        ),
+
         # Запуск RViz2
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
