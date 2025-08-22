@@ -8,7 +8,6 @@ Panels:
         - /TF Frames1
         - /TF Frames1/Tree1
         - /Camera1
-        - /Camera1/Status1
       Splitter Ratio: 0.5
     Tree Height: 646
 Visualization Manager:
@@ -41,18 +40,15 @@ Visualization Manager:
           Value: true
         map:
           Value: true
-        tag36h11:0:
-          Value: true
       Marker Scale: 0.20000000298023224
       Name: TF Frames
-      Show Arrows: false
+      Show Arrows: true
       Show Axes: true
       Show Names: true
       Tree:
         map:
           camera_link:
-            tag36h11:0:
-              {}
+            {}
       Update Interval: 0
       Value: true
     - Class: rviz_default_plugins/Camera
