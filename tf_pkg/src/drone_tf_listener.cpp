@@ -14,6 +14,9 @@
 #include "tf2_ros/buffer.h"
 #include "geometry_msgs/msg/transform_stamped.hpp"
 
+#include "tf2/LinearMath/Quaternion.h"
+#include "tf2/LinearMath/Matrix3x3.h"   // Для tf2::Matrix3x3 и getRPY
+
 using namespace std::chrono_literals;
 
 class DroneTFListener : public rclcpp::Node
@@ -33,6 +36,10 @@ public:
     lateral_threshold_ = 0.1;  // м для x/y
     depth_threshold_min_ = 0.5;  // м, слишком близко
     depth_threshold_max_ = 1.0;  // м, слишком далеко
+
+    roll_treshold = 0.2;
+    pitch_treshold = 0.1;
+    yaw_treshold = 0.1;
   }
 
 private:
@@ -56,15 +63,29 @@ private:
     double y = transform.transform.translation.y;
     double z = transform.transform.translation.z;
 
+    const auto& rotate_tf2 = transform.transform.rotation;
+
+    tf2::Quaternion q(
+      rotate_tf2.x,
+      rotate_tf2.y,
+      rotate_tf2.z,
+      rotate_tf2.w
+    );
+
+    tf2::Matrix3x3 m(q);
+    double roll, pitch, yaw;
+    m.getRPY(roll, pitch, yaw);
+
     // Генерация команд
-    std::string commands = generate_commands(x, y, z);
+    std::string translations = generate_translations(x, y, z);
+    std::string rotations = generate_rotations(roll, pitch, yaw);
 
     // Вывод команд (как будто инструкции дрону)
-    RCLCPP_INFO(this->get_logger(), "Трансформация: x=%.2f, y=%.2f, z=%.2f. Команды: %s",
-                x, y, z, commands.c_str());
+    RCLCPP_INFO(this->get_logger(), "Трансформация: x=%.2f, y=%.2f, z=%.2f. Команды: %s\nПоворот дрона: x=%.2f, y=%.2f, z=%.2f, w=%.2f, roll=%.2f, pitch=%.2f, yaw=%.2f. Команды: %s",
+    x, y, z, translations.c_str(), rotate_tf2.x, rotate_tf2.y, rotate_tf2.z, rotate_tf2.w, roll, pitch, yaw, rotations.c_str());
   }
 
-  std::string generate_commands(double x, double y, double z)
+  std::string generate_translations(double x, double y, double z)
   {
     std::string cmd = "";
 
@@ -103,6 +124,44 @@ private:
     return cmd;
   }
 
+  std::string generate_rotations(double roll, double pitch, double yaw)
+  {
+    std::string cmd = "";
+
+    if (std::abs(roll + 3.0) > roll_treshold) {
+      if (roll > 0) {
+        cmd += "наклонись вперёд; ";
+      } else {
+        cmd += "наклонись назад; ";
+      }
+    }
+
+    if (std::abs(pitch) > pitch_treshold) {
+      if (pitch > 0) {
+        cmd += "наклонись вправо; ";
+      } else {
+        cmd += "наклонись влево; ";
+      }
+    }
+
+    if (std::abs(yaw) > yaw_treshold) {
+      if (yaw > 0) {
+        cmd += "повернись влево; ";
+      } else {
+        cmd += "повернись вправо; ";
+      }
+    }
+
+    if (cmd.empty()) {
+      cmd = "на месте (цель центрирована)";
+    } else {
+      // Убрать trailing "; "
+      cmd = cmd.substr(0, cmd.length() - 2);
+    }
+
+    return cmd;
+  }
+
   std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
   std::shared_ptr<tf2_ros::TransformListener> tf_listener_{nullptr};
   rclcpp::TimerBase::SharedPtr timer_{nullptr};
@@ -110,6 +169,9 @@ private:
   double lateral_threshold_;
   double depth_threshold_min_;
   double depth_threshold_max_;
+  double roll_treshold;
+  double pitch_treshold;
+  double yaw_treshold;
 };
 
 int main(int argc, char * argv[])
