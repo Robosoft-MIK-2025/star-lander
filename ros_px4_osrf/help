@@ -1,0 +1,9 @@
+git config --global --add safe.directory /root/ros2_px4_ws/src/PX4-Autopilot
+
+git config --global --add safe.directory /root/ros2_px4_ws/src/PX4-Autopilot/Tools/simulation/flightgear/flightgear_bridge
+
+git config --global --add safe.directory /root/ros2_px4_ws/src/PX4-Autopilot/Tools/simulation/flightgear/flightgear_bridge/models/Rascal
+
+git config --global --add safe.directory /root/ros2_px4_ws/src/PX4-Autopilot/Tools/simulation/gazebo-classic/sitl_gazebo-classic
+
+git config --global --add safe.directory /root/ros2_px4_ws/src/PX4-Autopilot/Tools/simulation/flightgear/flightgear_bridge/models/TF-G1
