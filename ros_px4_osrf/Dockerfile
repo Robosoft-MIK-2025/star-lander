@@ -115,17 +115,10 @@ RUN pip3 install --upgrade pip && \
 RUN mkdir -p /root/ros2_px4_ws/src
 
 COPY Micro-XRCE-DDS-Agent /root/ros2_px4_ws/src/Micro-XRCE-DDS-Agent/
-COPY PX4-Autopilot /root/ros2_px4_ws/src/PX4-Autopilot/
-COPY px4_msgs /root/ros2_px4_ws/src/px4_msgs/
-COPY px4_ros_com /root/ros2_px4_ws/src/px4_ros_com/
-# Если 'help' нужна (скорее нет), то COPY help /root/ros2_px4_ws/src/help/
-# Dockerfile и docker-compose.yaml не копируй — они не нужны в src
+COPY PX4-Autopilot /root/ros2_px4_ws/src/PX4-Autopilot
+# cd /root/ros2_px4_ws/src \
+#     && git clone https://github.com/eProsima/Micro-XRCE-DDS-Agent.git && \
 
-# Опционально: Если нужно запустить setup_ubuntu.sh из PX4 (раскомментируй, если deps не все стоят)
-# RUN cd /root/ros2_px4_ws/src/PX4-Autopilot && bash Tools/setup/ubuntu.sh --no-nuttx --no-sim-tools
-
-RUN cd /root/ros2_px4_ws/src \
-    && bash ./PX4-Autopilot/Tools/setup/ubuntu.sh
 
 RUN cd /root/ros2_px4_ws/src/Micro-XRCE-DDS-Agent && \
     mkdir build && \
@@ -135,11 +128,22 @@ RUN cd /root/ros2_px4_ws/src/Micro-XRCE-DDS-Agent && \
     sudo make install && \
     sudo ldconfig /usr/local/lib/
 
+# Это сделать не получилось
+# cd /root/ros2_px4_ws/src \
+#     && git clone https://github.com/PX4/PX4-Autopilot.git --recursive \
+
+    # грёбанный костыль - против грёбанной защиты git
+RUN git config --global safe.directory '*' \
+    # && cd /root/ros2_px4_ws/src \
+    # && ls -la \
+    && cd /root/ros2_px4_ws/src/PX4-Autopilot \
+    && bash ./Tools/setup/ubuntu.sh \
+    && git submodule update --init --recursive
+
 # Purge and remove conflicting system packages to avoid duplicates with ROS vendored versions
 RUN apt-get purge -y libgtest-dev libgmock-dev liburdfdom-dev liburdfdom-headers-dev liburdfdom-tools || true \
     && rm -rf /usr/src/gtest /usr/src/gmock /usr/share/urdfdom
 
-#RUN colcon build --symlink-install --packages-ignore px4
 
 # Clean up
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -155,4 +159,4 @@ RUN echo "source /root/ros2_px4_ws/src/.bashrc" >> /root/.bashrc
 # Добавляем source в .bashrc
 RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /home/$USERNAME/.bashrc
 
-CMD ["bash"]
+CMD ["bash"]  

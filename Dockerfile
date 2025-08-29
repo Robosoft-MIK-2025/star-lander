@@ -17,12 +17,14 @@ RUN groupadd --gid $USER_GID $USERNAME \
     && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
     && chmod 0440 /etc/sudoers.d/$USERNAME
 
+# chsh -s /bin/bash
+# sudo usermod -s /bin/bash mobile
 
 # Update and install necessary packages
 RUN apt-get update && apt-get upgrade -y \
     && apt-get install -y nano sudo curl gnupg2 lsb-release net-tools python3-pip \
     && curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | apt-key add - \
-    && echo "deb http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros2-latest.list
+    # && echo "deb http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros2-latest.list
 
 # Install slcan-utils from source if not available
 RUN apt-get install -y git build-essential \
@@ -66,7 +68,6 @@ RUN apt-get update && apt-get upgrade -y && \
 RUN apt-get update && apt-get upgrade -y && \
     apt-get install -y \
     v4l-utils \
-    ros-${ROS_DISTRO}-turtle-tf2-py \
     ros-${ROS_DISTRO}-rviz-default-plugins \
     ros-${ROS_DISTRO}-rqt-tf-tree
 
