@@ -1,10 +1,11 @@
 x-common: &common-setup
-  image: fabook/mik:common # current-state:latest  # fabook/mik:common
+  build: .
+  image: ros2_px4_gazebo:common # ros2_px4:common  # fabook/mik:common
   network_mode: host
   privileged: true
   volumes: 
     - ${HOME}/.Xauthority:/home/mobile/.Xauthority:rw
-    - .:/root/ros2_ws/src:rw
+    - .:/root/ros2_px4_ws/src:rw
     - /tmp/.X11-unix:/tmp/.X11-unix:rw
     - /dev/dri:/dev/dri:rw
 
@@ -23,6 +24,6 @@ services:
     <<: *common-setup
     stdin_open: true  # dsocker run -i
     tty: true        # docker run -t
-    working_dir: /root/ros2_ws
+    working_dir: /root/ros2_px4_ws
     command: []
     restart: always

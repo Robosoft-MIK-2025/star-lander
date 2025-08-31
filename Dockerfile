@@ -1,6 +1,6 @@
 # Use ROS 2 Humble from Docker Hub as the base image
 FROM osrf/ros:humble-desktop-full
-# Set non-interactive frontend fodebconf
+# Set non-interactive frontend for debconf
 ENV DEBIAN_FRONTEND=noninteractive
 
 ENV ROS_DISTRO=humble
@@ -20,11 +20,11 @@ RUN groupadd --gid $USER_GID $USERNAME \
 # chsh -s /bin/bash
 # sudo usermod -s /bin/bash mobile
 
+
 # Update and install necessary packages
 RUN apt-get update && apt-get upgrade -y \
     && apt-get install -y nano sudo curl gnupg2 lsb-release net-tools python3-pip \
-    && curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | apt-key add - \
-    # && echo "deb http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros2-latest.list
+    && curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | apt-key add -
 
 # Install slcan-utils from source if not available
 RUN apt-get install -y git build-essential \
@@ -67,22 +67,93 @@ RUN apt-get update && apt-get upgrade -y && \
 # mine
 RUN apt-get update && apt-get upgrade -y && \
     apt-get install -y \
+    wget \
     v4l-utils \
     ros-${ROS_DISTRO}-rviz-default-plugins \
     ros-${ROS_DISTRO}-rqt-tf-tree
+
+RUN sudo curl https://packages.osrfoundation.org/gazebo.gpg --output /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] https://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null \
+    && sudo apt-get update -y \
+    && sudo apt-get install -y gz-harmonic
+
+# NEW: Добавляем зависимости для PX4 (из ubuntu.sh скрипта PX4)
+RUN apt-get update && apt-get install -y \
+    cmake \
+    build-essential \
+    libopencv-dev \
+    python3-empy \
+    python3-jinja2 \
+    python3-packaging \
+    python3-psutil \
+    python3-toml \
+    python3-yaml \
+    ninja-build \
+    libgstreamer1.0-dev \
+    libgstreamer-plugins-base1.0-dev \
+    gstreamer1.0-plugins-base \
+    gstreamer1.0-plugins-good \
+    gstreamer1.0-plugins-bad \
+    gstreamer1.0-plugins-ugly \
+    gstreamer1.0-libav \
+    gstreamer1.0-tools \
+    gstreamer1.0-x \
+    gstreamer1.0-alsa \
+    gstreamer1.0-gl \
+    gstreamer1.0-gtk3 \
+    gstreamer1.0-qt5 \
+    gstreamer1.0-pulseaudio \
+    --fix-missing
+
+# NEW: Устанавливаем pip-пакеты для PX4/ROS2 compat
+RUN pip3 install --upgrade pip && \
+    pip3 install empy==3.3.4 pyros-genmsg kconfiglib jsonschema
+    #numpy<2.0 pyyaml requests pyulog cerberus coverage ifaddr markupsafe pyelftools wheel argcomplete
+
+
+# NEW: Создаём workspace dir и копируем клонированные репо из build context
+RUN mkdir -p /root/ros2_px4_ws/src
+
+COPY Micro-XRCE-DDS-Agent /root/ros2_px4_ws/src/Micro-XRCE-DDS-Agent/
+COPY PX4-Autopilot /root/ros2_px4_ws/src/PX4-Autopilot
+
+RUN cd /root/ros2_px4_ws/src/Micro-XRCE-DDS-Agent && \
+    mkdir build && \
+    cd build && \
+    cmake .. && \
+    make && \
+    sudo make install && \
+    sudo ldconfig /usr/local/lib/
+
+# Это сделать не получилось
+# cd /root/ros2_px4_ws/src \
+#     && git clone https://github.com/PX4/PX4-Autopilot.git --recursive \
+
+    # грёбанный костыль - против грёбанной защиты git
+RUN git config --global safe.directory '*' \
+    # && cd /root/ros2_px4_ws/src \
+    # && ls -la \
+    && cd /root/ros2_px4_ws/src/PX4-Autopilot \
+    && bash ./Tools/setup/ubuntu.sh \
+    && git submodule update --init --recursive
+
+# Purge and remove conflicting system packages to avoid duplicates with ROS vendored versions
+RUN apt-get purge -y libgtest-dev libgmock-dev liburdfdom-dev liburdfdom-headers-dev liburdfdom-tools || true \
+    && rm -rf /usr/src/gtest /usr/src/gmock /usr/share/urdfdom
+
 
 # Clean up
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Initialize rosdep (run as user)
-RUN sudo rosdep init || true \
+RUN rm -f /etc/ros/rosdep/sources.list.d/20-default.list && \
+    sudo rosdep init || true \
     && rosdep update
 
 # mine
-RUN echo "source /root/ros2_ws/src/.bashrc" >> /root/.bashrc
+RUN echo "source /root/ros2_px4_ws/src/.bashrc" >> /root/.bashrc
 
 # Добавляем source в .bashrc
 RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /home/$USERNAME/.bashrc
 
-CMD ["bash"]
-
+CMD ["bash"]  
