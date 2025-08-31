@@ -150,6 +150,10 @@ RUN rm -f /etc/ros/rosdep/sources.list.d/20-default.list && \
     sudo rosdep init || true \
     && rosdep update
 
+RUN apt update -y \
+    && apt upgrade -y \
+    && apt install python3-venv -y
+
 # mine
 RUN echo "source /root/ros2_px4_ws/src/.bashrc" >> /root/.bashrc
 
