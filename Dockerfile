@@ -73,7 +73,9 @@ RUN apt-get update && apt-get upgrade -y && \
     # for camera and ros2 additional packages
     v4l-utils \
     ros-${ROS_DISTRO}-rviz-default-plugins \
-    ros-${ROS_DISTRO}-rqt-tf-tree
+    ros-${ROS_DISTRO}-rqt-tf-tree \
+    # instead of git repo for faster use
+    ros-${ROS_DISTRO}-px4-msgs 
 
 RUN sudo curl https://packages.osrfoundation.org/gazebo.gpg --output /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg \
     && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] https://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null \
@@ -119,22 +121,11 @@ RUN mkdir -p /root/ros2_px4_ws/src \
     && cd /root/ros2_px4_ws \
     && git clone -b v2.4.2 https://github.com/eProsima/Micro-XRCE-DDS-Agent.git \
     && git clone https://github.com/PX4/PX4-Autopilot.git --recursive \
-    && git clone https://github.com/PX4/px4_msgs.git  \
+    # hand build px4_msgs not needed yet
+    # && git clone https://github.com/PX4/px4_msgs.git  \
     && git clone https://github.com/PX4/px4_ros_com.git
 
-
-RUN wget https://d176tv9ibo4jno.cloudfront.net/builds/master/QGroundControl-x86_64.AppImage -O /root/ros2_px4_ws/QGroundControl-x86_64.AppImage \
-    && chmod +x /root/ros2_px4_ws/QGroundControl-x86_64.AppImage \
-    && usermod -aG dialout mobile \
-    # && systemctl mask --now ModemManager.service \
-    # На всякий случай, если директория не существует
-    && mkdir -p /etc/systemd/system \
-    && ln -sf /dev/null /etc/systemd/system/ModemManager.service
-
-
-# COPY Micro-XRCE-DDS-Agent /root/ros2_px4_ws/src/Micro-XRCE-DDS-Agent/
-# COPY PX4-Autopilot /root/ros2_px4_ws/PX4-Autopilot
-
+# build and setup micro xrce agent 
 RUN cd /root/ros2_px4_ws/Micro-XRCE-DDS-Agent \
     && sed -i '98s|2.12|2.13|' CMakeLists.txt \
     && sed -i '99s|2.12.x|2.13.3|' CMakeLists.txt \
@@ -145,6 +136,17 @@ RUN cd /root/ros2_px4_ws/Micro-XRCE-DDS-Agent \
     sudo make install && \
     sudo ldconfig /usr/local/lib/
 
+# QGroundControl install and setup
+RUN wget https://d176tv9ibo4jno.cloudfront.net/builds/master/QGroundControl-x86_64.AppImage -O /root/ros2_px4_ws/QGroundControl-x86_64.AppImage \
+    && chmod +x /root/ros2_px4_ws/QGroundControl-x86_64.AppImage \
+    && usermod -aG dialout mobile \
+    # && systemctl mask --now ModemManager.service \
+    # На всякий случай, если директория не существует
+    && mkdir -p /etc/systemd/system \
+    && ln -sf /dev/null /etc/systemd/system/ModemManager.service
+
+
+# setup and install PX4-Autopilot
     # грёбанный костыль - против грёбанной защиты git
 RUN git config --global safe.directory '*' \
     && cd /root/ros2_px4_ws/PX4-Autopilot \
@@ -155,7 +157,6 @@ RUN git config --global safe.directory '*' \
 # RUN apt-get purge -y libgtest-dev libgmock-dev liburdfdom-dev liburdfdom-headers-dev liburdfdom-tools || true \
 #     && rm -rf /usr/src/gtest /usr/src/gmock /usr/share/urdfdom
 
-# RUN colcon build --symlink-install --packages-ignore px4
 
 # Clean up
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -164,6 +165,8 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 RUN rm -f /etc/ros/rosdep/sources.list.d/20-default.list && \
     sudo rosdep init || true \
     && rosdep update
+
+RUN colcon build --symlink-install --packages-select px4_ros_com
 
 # RUN apt update -y \
 #     && apt upgrade -y \
