@@ -11,6 +11,9 @@ find_package(geometry_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
+find_package(px4_msgs REQUIRED)
+
+include_directories(include)
 
 install(DIRECTORY launch
   DESTINATION share/${PROJECT_NAME})
@@ -22,6 +25,7 @@ ament_target_dependencies(
     rclcpp
     tf2
     tf2_ros
+    px4_msgs
 )
 install(TARGETS
     drone_tf_listener

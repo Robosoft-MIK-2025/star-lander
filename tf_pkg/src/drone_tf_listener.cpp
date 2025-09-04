@@ -17,6 +17,8 @@
 #include "tf2/LinearMath/Quaternion.h"
 #include "tf2/LinearMath/Matrix3x3.h"   // Для tf2::Matrix3x3 и getRPY
 
+#include "px4_msgs/msg/vehicle_command.hpp"
+
 using namespace std::chrono_literals;
 
 class DroneTFListener : public rclcpp::Node
@@ -40,9 +42,23 @@ public:
     roll_treshold = 0.2;
     pitch_treshold = 0.1;
     yaw_treshold = 0.1;
+
+    command_publisher_ = this->create_publisher<px4_msgs::msg::VehicleCommand>("/fmu/in/vehicle_command", 10);
   }
 
 private:
+  std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
+  std::shared_ptr<tf2_ros::TransformListener> tf_listener_{nullptr};
+  rclcpp::TimerBase::SharedPtr timer_{nullptr};
+  rclcpp::Publisher<px4_msgs::msg::VehicleCommand>::SharedPtr command_publisher_;
+
+  double lateral_threshold_;
+  double depth_threshold_min_;
+  double depth_threshold_max_;
+  double roll_treshold;
+  double pitch_treshold;
+  double yaw_treshold;
+
   void on_timer()
   {
     std::string from_frame = "camera_link";  // Фрейм камеры
@@ -81,8 +97,16 @@ private:
     std::string rotations = generate_rotations(roll, pitch, yaw);
 
     // Вывод команд (как будто инструкции дрону)
-    RCLCPP_INFO(this->get_logger(), "Трансформация: x=%.2f, y=%.2f, z=%.2f. Команды: %s\nПоворот дрона: x=%.2f, y=%.2f, z=%.2f, w=%.2f, roll=%.2f, pitch=%.2f, yaw=%.2f. Команды: %s",
-    x, y, z, translations.c_str(), rotate_tf2.x, rotate_tf2.y, rotate_tf2.z, rotate_tf2.w, roll, pitch, yaw, rotations.c_str());
+    // RCLCPP_INFO(this->get_logger(), "Трансформация: x=%.2f, y=%.2f, z=%.2f. Команды: %s\nПоворот дрона: x=%.2f, y=%.2f, z=%.2f, w=%.2f, roll=%.2f, pitch=%.2f, yaw=%.2f. Команды: %s", x, y, z, translations.c_str(), rotate_tf2.x, rotate_tf2.y, rotate_tf2.z, rotate_tf2.w, roll, pitch, yaw, rotations.c_str());
+
+    // сокращённая версия (без лютого засера лога)
+    RCLCPP_INFO(this->get_logger(), "Трансформация: Команды: %s\nПоворот дрона: Команды: %s", translations.c_str(),rotations.c_str());
+
+  // Если центрировано, отправь посадку (на текущей позиции или с координатами)
+    if (translations == "на месте (цель центрирована)" && rotations == "на месте (цель центрирована)") {
+      send_land_command(47.397742, 8.545594, 0.0);  // Пример координат (lat, lon, alt AMSL). 0.0 для текущей.
+      // TODO: Или без параметров: send_land_command(); для посадки на текущей позиции???
+    }
   }
 
   std::string generate_translations(double x, double y, double z)
@@ -162,16 +186,28 @@ private:
     return cmd;
   }
 
-  std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
-  std::shared_ptr<tf2_ros::TransformListener> tf_listener_{nullptr};
-  rclcpp::TimerBase::SharedPtr timer_{nullptr};
+void send_land_command(double latitude = 0.0, double longitude = 0.0, float altitude = 0.0f)
+  {
+    auto msg = px4_msgs::msg::VehicleCommand();
+    msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;  // Timestamp в мкс
+    msg.command = px4_msgs::msg::VehicleCommand::VEHICLE_CMD_NAV_LAND;  // Команда посадки
+    msg.param1 = 0.0f;  // Минимальная скорость спуска (0 для дефолта)
+    msg.param2 = 0.0f;
+    msg.param3 = 0.0f;
+    msg.param4 = std::numeric_limits<float>::quiet_NaN();  // Yaw (NaN для игнора)
+    msg.param5 = static_cast<float>(latitude);  // Широта (градусы)
+    msg.param6 = static_cast<float>(longitude);  // Долгота (градусы)
+    msg.param7 = altitude;  // Высота AMSL (метры)
+    msg.target_system = 1;  // Твой дрон
+    msg.target_component = 1;
+    msg.source_system = 255;  // От ROS2
+    msg.source_component = 0;
+    msg.from_external = true;  // Внешняя команда
+    msg.confirmation = 0;
 
-  double lateral_threshold_;
-  double depth_threshold_min_;
-  double depth_threshold_max_;
-  double roll_treshold;
-  double pitch_treshold;
-  double yaw_treshold;
+    command_publisher_->publish(msg);
+    RCLCPP_INFO(this->get_logger(), "Отправлена команда посадки на координаты: lat=%.6f, lon=%.6f, alt=%.2f", latitude, longitude, altitude);
+  }
 };
 
 int main(int argc, char * argv[])
