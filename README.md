@@ -28,7 +28,21 @@ git clone git@github.com:Robosoft-MIK-2025/star-lander.git
 cd star-lander
 ```
 
-Запустите контейнер:  
+Разрешите Docker использовать GUI приложения
+```bash
+nano ~/.bashrc
+```
+
+в конец файла добавить
+```bash
+# docker gui enable
+xhost +local:docker
+```
+
+Запустите контейнер: 
+> [!TIP] 
+> перейти в директорию с Dockerfile и docker-compose.yaml
+> (что-то типо: your-user@your-pc:..../star-lender$)
 ```bash
 docker compose up --build terminal
 ```
@@ -36,8 +50,64 @@ docker compose up --build terminal
 Подключитесь к контейнеру из других терминалов:  
 ```bash
 docker compose exec terminal bash
+# Теперь мы в докер контейнере
 ```
 
+Сборка пакетов этого репозитория:
+```bash
+cd /root/ros2_px4_ws
+colcon build --packages-select tf_pkg apriltag_pkg bringup_pkg camera_pkg rviz_pkg
+. install/setup.bash
+```
+
+Запускаем агент для связи между px4 и ros2:
+```bash
+MicroXRCEAgent udp4 -p 8888
+```
+
+
+Подключитесь к контейнеру из других терминалов:
+> [!TIP] 
+> перейти в директорию с Dockerfile и docker-compose.yaml
+> (что-то типо: your-user@your-pc:..../star-lender$)
+```bash
+docker compose exec terminal bash
+# Теперь мы в докер контейнере
+```
+Сборка репозитория PX4 и запуск тестового дрона
+(чтобы проверить что всё работает)
+```bash
+cd PX4-Autopilot/
+make px4_sitl gz_x500
+```
+
+Подключитесь к контейнеру из других терминалов:  
+```bash
+docker compose exec terminal bash
+# Теперь мы в докер контейнере
+```
+
+Запуск QGC для отслеживания местоположения дрона 
+(и удобного вызова базовых команд таких как
+- взлёт,
+- посадка,
+- перемещение дрона
+- и т д)
+```bash
+su mobile
+APPIMAGE_EXTRACT_AND_RUN=1 ./QGroundControl-x86_64.AppImage
+```
+
+Подключитесь к контейнеру из других терминалов:  
+```bash
+docker compose exec terminal bash
+# Теперь мы в докер контейнере
+```
+
+Запуск всех пакетов *_pkg этого репозитория
+```bash
+ros2 launch bringup_pkg bringup.launch.py
+```
 ### **3. Сборка Docker**  
 
 После внесения изменений в Dockerfile необходимо собрать новый образ и загрузить его в облако (опционально).  
