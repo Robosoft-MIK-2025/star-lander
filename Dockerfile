@@ -2,8 +2,9 @@
 FROM osrf/ros:humble-desktop-full
 # Set non-interactive frontend for debconf
 ENV DEBIAN_FRONTEND=noninteractive
-
 ENV ROS_DISTRO=humble
+
+ENV CURRENT_ROS_WS=/root/ros2_px4_ws
 
 # Set arguments for user creation
 ARG USERNAME=mobile
@@ -73,9 +74,9 @@ RUN apt-get update && apt-get upgrade -y && \
     # for camera and ros2 additional packages
     v4l-utils \
     ros-${ROS_DISTRO}-rviz-default-plugins \
-    ros-${ROS_DISTRO}-rqt-tf-tree \
-    # instead of git repo for faster use
-    ros-${ROS_DISTRO}-px4-msgs 
+    ros-${ROS_DISTRO}-rqt-tf-tree
+    # instead of git repo for faster use [not supported, only ROS1]
+    # ros-${ROS_DISTRO}-px4-msgs 
 
 RUN sudo curl https://packages.osrfoundation.org/gazebo.gpg --output /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg \
     && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] https://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null \
@@ -117,16 +118,16 @@ RUN pip3 install --upgrade pip && \
 
 
 # NEW: Создаём workspace dir и копируем клонированные репо из build context
-RUN mkdir -p /root/ros2_px4_ws/src \
-    && cd /root/ros2_px4_ws \
+RUN mkdir -p ${CURRENT_ROS_WS}/src \
+    && cd ${CURRENT_ROS_WS} \
     && git clone -b v2.4.2 https://github.com/eProsima/Micro-XRCE-DDS-Agent.git \
     && git clone https://github.com/PX4/PX4-Autopilot.git --recursive \
-    # hand build px4_msgs not needed yet
-    # && git clone https://github.com/PX4/px4_msgs.git  \
+    # hand build px4_msgs
+    && git clone https://github.com/PX4/px4_msgs.git  \
     && git clone https://github.com/PX4/px4_ros_com.git
 
 # build and setup micro xrce agent 
-RUN cd /root/ros2_px4_ws/Micro-XRCE-DDS-Agent \
+RUN cd ${CURRENT_ROS_WS}/Micro-XRCE-DDS-Agent \
     && sed -i '98s|2.12|2.13|' CMakeLists.txt \
     && sed -i '99s|2.12.x|2.13.3|' CMakeLists.txt \
     && mkdir build && \
@@ -137,8 +138,8 @@ RUN cd /root/ros2_px4_ws/Micro-XRCE-DDS-Agent \
     sudo ldconfig /usr/local/lib/
 
 # QGroundControl install and setup
-RUN wget https://d176tv9ibo4jno.cloudfront.net/builds/master/QGroundControl-x86_64.AppImage -O /root/ros2_px4_ws/QGroundControl-x86_64.AppImage \
-    && chmod +x /root/ros2_px4_ws/QGroundControl-x86_64.AppImage \
+RUN wget https://d176tv9ibo4jno.cloudfront.net/builds/master/QGroundControl-x86_64.AppImage -O ${CURRENT_ROS_WS}/QGroundControl-x86_64.AppImage \
+    && chmod +x ${CURRENT_ROS_WS}/QGroundControl-x86_64.AppImage \
     && usermod -aG dialout mobile \
     # && systemctl mask --now ModemManager.service \
     # На всякий случай, если директория не существует
@@ -149,31 +150,30 @@ RUN wget https://d176tv9ibo4jno.cloudfront.net/builds/master/QGroundControl-x86_
 # setup and install PX4-Autopilot
     # грёбанный костыль - против грёбанной защиты git
 RUN git config --global safe.directory '*' \
-    && cd /root/ros2_px4_ws/PX4-Autopilot \
+    && cd ${CURRENT_ROS_WS}/PX4-Autopilot \
     && bash ./Tools/setup/ubuntu.sh \
     && git submodule update --init --recursive
-
-# Purge and remove conflicting system packages to avoid duplicates with ROS vendored versions
-# RUN apt-get purge -y libgtest-dev libgmock-dev liburdfdom-dev liburdfdom-headers-dev liburdfdom-tools || true \
-#     && rm -rf /usr/src/gtest /usr/src/gmock /usr/share/urdfdom
-
-
-# Clean up
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Initialize rosdep (run as user)
 RUN rm -f /etc/ros/rosdep/sources.list.d/20-default.list && \
     sudo rosdep init || true \
     && rosdep update
 
-RUN colcon build --symlink-install --packages-select px4_ros_com
+# install dependencies and build pkgs
+RUN apt-get update \
+    && cd ${CURRENT_ROS_WS} \
+    && rosdep install --from-paths . --ignore-src -r -y \
+    # from /bin/sh don't work
+    # && . /opt/ros/${ROS_DISTRO}/setup.bash \
+    # && colcon build --symlink-install --packages-select px4_msgs px4_ros_com
+    && /bin/bash -c "source /opt/ros/${ROS_DISTRO}/setup.bash && colcon build --symlink-install --packages-select px4_msgs px4_ros_com  && . install/setup.bash"
+    # unfortunately don't see tf_pkg apriltag_pkg bringup_pkg camera_pkg rviz_pkg to build it here, need to do it in runtime
 
-# RUN apt update -y \
-#     && apt upgrade -y \
-#     && apt install python3-venv -y
+# Clean up
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # mine
-RUN echo "source /root/ros2_px4_ws/src/.bashrc" >> /root/.bashrc
+RUN echo "source ${CURRENT_ROS_WS}/src/.bashrc" >> /root/.bashrc
 
 # Добавляем source в .bashrc
 RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /home/$USERNAME/.bashrc

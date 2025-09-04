@@ -99,6 +99,7 @@ fi
 #fi
 
 source /opt/ros/humble/setup.bash
+source install/setup.bash || true
 
 export DISPLAY=:1
 export XAUTHORITY=/home/mobile/.Xauthority
@@ -108,3 +109,7 @@ mkdir -p $XDG_RUNTIME_DIR
 chmod 700 $XDG_RUNTIME_DIR
 
 export USER=root
+
+# TODO: enable where it possible this variable due to best practice for change
+export CURRENT_ROS_WS=/root/ros2_px4_ws
+export GZ_SIM_RESOURCE_PATH="{$CURRENT_ROS_WS}/src/gz_pkg/models":$GZ_SIM_RESOURCE_PATH
