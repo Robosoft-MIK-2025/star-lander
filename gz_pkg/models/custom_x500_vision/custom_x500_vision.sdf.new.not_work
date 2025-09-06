@@ -1,0 +1,77 @@
+<?xml version="1.0" ?>
+<sdf version="1.7">
+  <model name="custom_x500_vision">
+    <!-- Наследуем от x500 (который наследует от x500_base) -->
+    <include merge="true">
+      <uri>model://x500</uri>
+    </include>
+
+    <!-- Добавляем твою камеру к base_link -->
+    <link name="base_link">  <!-- Это merge в существующий link -->
+      <sensor name="vision" type="camera">
+        <pose>0.1 0 -0.1 0 1.57 0</pose>
+        <update_rate>0.01</update_rate>
+        <inertial>
+          <mass>0.0001</mass>
+          <inertia>
+            <ixx>0.0001</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.0001</iyy>
+            <iyz>0</iyz>
+            <izz>0.0001</izz>
+          </inertia>
+        </inertial>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>0.05 0.05 0.02</size>
+            </box>
+          </geometry>
+          <material>
+            <diffuse>0 0 1 1</diffuse>  <!-- Синий для видимости -->
+          </material>
+        </visual>
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>0.05 0.05 0.02</size>
+            </box>
+          </geometry>
+        </collision>
+        <camera>
+          <horizontal_fov>1.047</horizontal_fov>
+          <image>
+            <width>640</width>
+            <height>480</height>
+          </image>
+          <clip>
+            <near>0.1</near>
+            <far>100</far>
+          </clip>
+          <distortion>
+            <k1>0.0</k1>
+            <k2>0.0</k2>
+            <k3>0.0</k3>
+            <p1>0.0</p1>
+            <p2>0.0</p2>
+          </distortion>
+        </camera>
+        <plugin name="camera_plugin" filename="gz-sim-camera-system">
+          <ros>
+            <argument>/image_raw</argument>
+            <argument>sensor_msgs/msg/Image</argument>
+            <argument>/camera_info</argument>
+            <argument>sensor_msgs/msg/CameraInfo</argument>
+          </ros>
+        </plugin>
+        <frame_name>camera_link</frame_name>
+      </sensor>
+    </link>
+
+    <!-- Другие кастомные добавки, если нужно (например, плагины) -->
+    <plugin name="vision_plugin" filename="gz-sim-odometry-system">
+      <odometry_topic>/odom</odometry_topic>  <!-- Пример, если нужно odometry -->
+    </plugin>
+  </model>
+</sdf>

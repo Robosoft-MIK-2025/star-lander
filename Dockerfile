@@ -150,6 +150,8 @@ RUN wget https://d176tv9ibo4jno.cloudfront.net/builds/master/QGroundControl-x86_
 # setup and install PX4-Autopilot
     # грёбанный костыль - против грёбанной защиты git
 RUN git config --global safe.directory '*' \
+    # git config --global --unset safe.directory
+    # git config --global --unset-all safe.directory
     && cd ${CURRENT_ROS_WS}/PX4-Autopilot \
     && bash ./Tools/setup/ubuntu.sh \
     && git submodule update --init --recursive

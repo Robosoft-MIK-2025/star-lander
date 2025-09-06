@@ -1,0 +1,49 @@
+<?xml version="1.0" ?>
+<sdf version="1.7">
+  <world name="default">
+
+    <include>
+      <uri>model://apriltag_tag36h11_0</uri>
+      <pose>0 0 0 0 0 3.1416</pose>  <!-- Укажи позицию тега: x y z roll pitch yaw -->
+      <name>apriltag_0</name>   <!-- Опционально, имя экземпляра -->
+    </include>
+
+    <!-- Дрон custom_x500_vision (спавн в воздухе над тегом) -->
+    <include>
+      <uri>model://custom_x500_vision</uri>
+      <pose>0 0 1.0 0 0 0</pose>  <!-- x=0 y=0 z=1m, orientation 0 -->
+      <name>custom_x500_vision</name>
+    </include>
+
+    <!-- Освещение для камеры (default свет слабый) -->
+    <light name="sun" type="directional">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <attenuation>
+        <range>1000</range>
+        <linear>0.01</linear>
+        <constant>0.9</constant>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+
+    <!-- Физика -->
+    <physics type="ode">
+      <real_time_update_rate>0</real_time_update_rate>
+    </physics>
+
+    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"/>
+    <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands"/>
+    <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"/>
+
+    <!-- Мост ROS2-GZ (опционально, но лучше добавить для топиков) -->
+    <plugin filename="gz-sim-ros2-bridge-system" name="gz::sim::systems::Ros2Bridge">
+      <ros>
+        <namespace>/</namespace>
+      </ros>
+    </plugin>
+  </world>
+</sdf>

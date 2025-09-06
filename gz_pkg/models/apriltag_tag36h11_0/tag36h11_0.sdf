@@ -1,0 +1,38 @@
+<?xml version="1.0" ?>
+<sdf version="1.11"> <!-- 1.7 -->
+  <model name="apriltag_tag36h11_0">
+    <pose>0 0 0 0 0 0</pose>  <!-- Позиция в мире: x y z roll pitch yaw -->
+    <static>true</static>  <!-- Статичная модель -->
+    <link name="link">
+      <visual name="visual">
+        <geometry>
+          <box>
+            <size>0.2 0.2 0.001</size>  <!-- Размер метки: 20x20 см, толщина 0.1 см -->
+          </box>
+        </geometry>
+        <material>
+          <pbr>
+            <metal>
+              <albedo_map>model://apriltag_tag36h11_0/tag36_11_00000_highres.png</albedo_map>
+              <metalness>0.0</metalness>  <!-- 0 для неметалла -->
+              <roughness>0.5</roughness>  <!-- Шероховатость, подстройте -->
+            </metal>
+          </pbr>
+          <diffuse>1 1 1 1</diffuse>
+        </material>
+      </visual>
+      <collision name="collision">
+        <geometry>
+          <box>
+            <size>0.2 0.2 0.001</size>
+          </box>
+        </geometry>
+      </collision>
+    </link>
+    
+    <!-- <plugin name="apriltag_plugin" filename="libgazebo_ros_apriltag.so">  Если нужен плагин для детекции, но для простоты опционально
+      <tag_id>0</tag_id>
+      <tag_family>tag36h11</tag_family>
+    </plugin> -->
+  </model>
+</sdf>
