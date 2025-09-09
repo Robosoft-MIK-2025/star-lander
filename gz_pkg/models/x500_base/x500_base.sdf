@@ -334,12 +334,37 @@
             <uri>model://x500_base/meshes/1345_prop_ccw.stl</uri>
           </mesh>
         </geometry>
-        <material>
+
+        <!-- old ogre1 [not supported] -->
+        <!-- <material>
           <script>
             <name>Gazebo/DarkGrey</name>
             <uri>file://media/materials/scripts/gazebo.material</uri>
           </script>
+        </material> -->
+
+
+<!-- [not supported] -->
+<!-- Темно-серый цвет -->
+<!-- Настройте для шероховатости поверхности (0 = гладкая, 1 = шероховатая) -->
+ <!-- 0 для неметаллического -->
+        <!-- <material>
+          <pbr>
+            <metal>
+              <albedo>0.2 0.2 0.2</albedo>  
+              <roughness>0.5</roughness>    
+              <metalness>0.0</metalness>   
+            </metal>
+          </pbr>
+        </material> -->
+
+        <material>
+          <ambient>0.2 0.2 0.2 1</ambient>    <!-- Фоновое освещение -->
+          <diffuse>0.2 0.2 0.2 1</diffuse>    <!-- Диффузный цвет -->
+          <specular>0.01 0.01 0.01 1</specular>  <!-- Блеск -->
+          <emissive>0 0 0 1</emissive>       <!-- Самосвечение -->
         </material>
+
       </visual>
       <visual name="rotor_0_visual_motor_bell">
         <pose>0 0 -.032 0 0 0</pose>
@@ -406,12 +431,36 @@
             <uri>model://x500_base/meshes/1345_prop_ccw.stl</uri>
           </mesh>
         </geometry>
-        <material>
+
+        <!-- old ogre1 [not supported] -->
+        <!-- <material>
           <script>
             <name>Gazebo/DarkGrey</name>
             <uri>file://media/materials/scripts/gazebo.material</uri>
           </script>
+        </material> -->
+
+<!-- [not supported] -->
+<!-- Темно-серый цвет -->
+<!-- Настройте для шероховатости поверхности (0 = гладкая, 1 = шероховатая) -->
+ <!-- 0 для неметаллического -->
+        <!-- <material>
+          <pbr>
+            <metal>
+              <albedo>0.2 0.2 0.2</albedo>  
+              <roughness>0.5</roughness>    
+              <metalness>0.0</metalness>   
+            </metal>
+          </pbr>
+        </material> -->
+
+        <material>
+          <ambient>0.2 0.2 0.2 1</ambient>    <!-- Фоновое освещение -->
+          <diffuse>0.2 0.2 0.2 1</diffuse>    <!-- Диффузный цвет -->
+          <specular>0.01 0.01 0.01 1</specular>  <!-- Блеск -->
+          <emissive>0 0 0 1</emissive>       <!-- Самосвечение -->
         </material>
+
       </visual>
       <visual name="rotor_1_visual_motor_top">
         <pose>0 0 -.032 0 0 0</pose>
@@ -478,12 +527,36 @@
             <uri>model://x500_base/meshes/1345_prop_cw.stl</uri>
           </mesh>
         </geometry>
-        <material>
+
+        <!-- old ogre1 [not supported] -->
+        <!-- <material>
           <script>
             <name>Gazebo/DarkGrey</name>
             <uri>file://media/materials/scripts/gazebo.material</uri>
           </script>
+        </material> -->
+
+<!-- [not supported] -->
+<!-- Темно-серый цвет -->
+<!-- Настройте для шероховатости поверхности (0 = гладкая, 1 = шероховатая) -->
+ <!-- 0 для неметаллического -->
+        <!-- <material>
+          <pbr>
+            <metal>
+              <albedo>0.2 0.2 0.2</albedo>  
+              <roughness>0.5</roughness>    
+              <metalness>0.0</metalness>   
+            </metal>
+          </pbr>
+        </material> -->
+
+        <material>
+          <ambient>0.2 0.2 0.2 1</ambient>    <!-- Фоновое освещение -->
+          <diffuse>0.2 0.2 0.2 1</diffuse>    <!-- Диффузный цвет -->
+          <specular>0.01 0.01 0.01 1</specular>  <!-- Блеск -->
+          <emissive>0 0 0 1</emissive>       <!-- Самосвечение -->
         </material>
+
       </visual>
       <visual name="rotor_2_visual_motor_top">
         <pose>0 0 -.032 0 0 0</pose>
@@ -550,12 +623,36 @@
             <uri>model://x500_base/meshes/1345_prop_cw.stl</uri>
           </mesh>
         </geometry>
-        <material>
+        
+        <!-- old ogre1 [not supported] -->
+        <!-- <material>
           <script>
             <name>Gazebo/DarkGrey</name>
             <uri>file://media/materials/scripts/gazebo.material</uri>
           </script>
+        </material> -->
+
+<!-- [not supported] -->
+<!-- Темно-серый цвет -->
+<!-- Настройте для шероховатости поверхности (0 = гладкая, 1 = шероховатая) -->
+ <!-- 0 для неметаллического -->
+        <!-- <material>
+          <pbr>
+            <metal>
+              <albedo>0.2 0.2 0.2</albedo>  
+              <roughness>0.5</roughness>    
+              <metalness>0.0</metalness>   
+            </metal>
+          </pbr>
+        </material> -->
+
+        <material>
+          <ambient>0.2 0.2 0.2 1</ambient>    <!-- Фоновое освещение -->
+          <diffuse>0.2 0.2 0.2 1</diffuse>    <!-- Диффузный цвет -->
+          <specular>0.01 0.01 0.01 1</specular>  <!-- Блеск -->
+          <emissive>0 0 0 1</emissive>       <!-- Самосвечение -->
         </material>
+
       </visual>
       <visual name="rotor_3_visual_motor_top">
         <pose>0 0 -.032 0 0 0</pose>

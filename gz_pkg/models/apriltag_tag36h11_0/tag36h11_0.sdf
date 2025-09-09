@@ -1,10 +1,15 @@
 <?xml version="1.0" ?>
 <sdf version="1.11"> <!-- 1.7 -->
+  <![CDATA[
+    gz service -s /world/shapes/set_pose \
+               --reqtype gz.msgs.Pose --reptype gz.msgs.Boolean \
+               --timeout 300 --req 'name: "box", position: {z: 5.0}'
+  ]]>
   <model name="apriltag_tag36h11_0">
     <pose>0 0 0 0 0 0</pose>  <!-- Позиция в мире: x y z roll pitch yaw -->
     <static>true</static>  <!-- Статичная модель -->
-    <link name="link">
-      <visual name="visual">
+    <link name="apriltag_tag36h11_0_link">
+      <visual name="apriltag_tag36h11_0_visual">
         <geometry>
           <box>
             <size>0.2 0.2 0.001</size>  <!-- Размер метки: 20x20 см, толщина 0.1 см -->
@@ -21,7 +26,7 @@
           <diffuse>1 1 1 1</diffuse>
         </material>
       </visual>
-      <collision name="collision">
+      <collision name="apriltag_tag36h11_0_collision">
         <geometry>
           <box>
             <size>0.2 0.2 0.001</size>
@@ -35,4 +40,6 @@
       <tag_family>tag36h11</tag_family>
     </plugin> -->
   </model>
+
+
 </sdf>

@@ -113,9 +113,6 @@ export USER=root
 # TODO: enable where it possible this variable due to best practice for change
 export CURRENT_ROS_WS=/root/ros2_px4_ws
 
-export GZ_SIM_RESOURCE_PATH="$CURRENT_ROS_WS/src/gz_pkg/models":$GZ_SIM_RESOURCE_PATH
-export GZ_SIM_RESOURCE_PATH="$CURRENT_ROS_WS/src/gz_pkg/worlds":$GZ_SIM_RESOURCE_PATH
-
 export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:"$CURRENT_ROS_WS/src/gz_pkg/models"
 
 export PX4_GZ_MODELS="$CURRENT_ROS_WS/src/gz_pkg/models"
@@ -125,3 +122,14 @@ export PX4_GZ_WORLDS="$CURRENT_ROS_WS/src/gz_pkg/worlds"
 # to use "gz sim -v 4 /root/ros2_px4_ws/src/gz_pkg/worlds/empty_world.sdf"
 export GZ_IP=127.0.0.1
 export GZ_TRANSPORT_LOCALHOST_ONLY=1
+
+export GZ_SIM_RESOURCE_PATH="$CURRENT_ROS_WS/src/gz_pkg/models":$GZ_SIM_RESOURCE_PATH
+export GZ_SIM_RESOURCE_PATH="$CURRENT_ROS_WS/src/gz_pkg/worlds":$GZ_SIM_RESOURCE_PATH
+export GZ_SIM_RESOURCE_PATH="$CURRENT_ROS_WS/src/gz_pkg":${GZ_SIM_RESOURCE_PATH}
+
+export GZ_SIM_PLUGIN_PATH=/usr/lib/x86_64-linux-gnu:${GZ_SIM_PLUGIN_PATH}
+export GZ_SIM_SYSTEM_PLUGIN_PATH=/usr/lib/x86_64-linux-gnu/gz-sim-8/plugins:${GZ_SIM_SYSTEM_PLUGIN_PATH}
+
+export GZ_PLUGIN_PATH=/opt/ros/humble/lib:/usr/lib/x86_64-linux-gnu/gz-sim-8/plugins:$GZ_PLUGIN_PATH
+
+export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu/gz-sim-8/plugins:$LD_LIBRARY_PATH

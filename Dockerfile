@@ -61,6 +61,11 @@ RUN apt-get update && apt-get upgrade -y && \
     at-spi2-core \
     x11-apps \
     xauth \
+    ros-${ROS_DISTRO}-ros-gz \
+    ros-${ROS_DISTRO}-ros-gz-bridge \
+    ros-${ROS_DISTRO}-ros-gz-sim \
+    ros-${ROS_DISTRO}-ros-gz-interfaces \
+    ros-${ROS_DISTRO}-ros-ign-bridge \
     --fix-missing
 
 # mine
@@ -74,9 +79,16 @@ RUN apt-get update && apt-get upgrade -y && \
     # for camera and ros2 additional packages
     v4l-utils \
     ros-${ROS_DISTRO}-rviz-default-plugins \
-    ros-${ROS_DISTRO}-rqt-tf-tree
+    ros-${ROS_DISTRO}-rqt-tf-tree \
     # instead of git repo for faster use [not supported, only ROS1]
     # ros-${ROS_DISTRO}-px4-msgs 
+
+    ros-${ROS_DISTRO}-ros-gz \
+    ros-${ROS_DISTRO}-ros-gz-bridge \
+    ros-${ROS_DISTRO}-ros-gz-sim \
+    ros-${ROS_DISTRO}-ros-gz-interfaces \
+
+    ros-${ROS_DISTRO}-ros-ign-bridge
 
 RUN sudo curl https://packages.osrfoundation.org/gazebo.gpg --output /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg \
     && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] https://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null \

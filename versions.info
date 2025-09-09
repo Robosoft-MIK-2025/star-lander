@@ -1,0 +1,47 @@
+root@frog-LeoBook-16S:~/ros2_px4_ws# ls /opt/ros/
+humble
+
+root@frog-LeoBook-16S:~/ros2_px4_ws# env | grep ROS
+ROS_VERSION=2
+ROS_PYTHON_VERSION=3
+CURRENT_ROS_WS=/root/ros2_px4_ws
+ROS_LOCALHOST_ONLY=0
+ROS_DISTRO=humble
+
+root@frog-LeoBook-16S:~/ros2_px4_ws# apt list --installed | grep ros-humble-ros-gz
+
+WARNING: apt does not have a stable CLI interface. Use with caution in scripts.
+
+ros-humble-ros-gz-interfaces/jammy,now 0.244.20-1jammy.20250719.005401 amd64 [installed]
+
+root@frog-LeoBook-16S:~/ros2_px4_ws# gz sim --versions
+8.9.0
+7.9.0
+
+root@frog-LeoBook-16S:~/ros2_px4_ws# dpkg -l | grep gz-harmonic
+ii  gz-harmonic                                        1.0.0-1~jammy                           amd64        Collection of Gazebo packages - Harmonic
+
+root@frog-LeoBook-16S:~/ros2_px4_ws# cd /root/ros2_px4_ws/PX4-Autopilot
+git describe --tags --always
+v1.16.0-rc1-749-g944b3e763a
+root@frog-LeoBook-16S:~/ros2_px4_ws/PX4-Autopilot# 
+
+root@frog-LeoBook-16S:~/ros2_px4_ws/PX4-Autopilot# cd /root/ros2_px4_ws/px4_msgs
+git describe --tags --always
+8f0e44f
+
+root@frog-LeoBook-16S:~/ros2_px4_ws/px4_msgs# cd /root/ros2_px4_ws/px4_ros_com
+git describe --tags --always
+beta-384-g86e9aeb
+
+root@frog-LeoBook-16S:~/ros2_px4_ws/px4_ros_com# cd /root/ros2_px4_ws/Micro-XRCE-DDS-Agent
+git describe --tags --always
+v2.4.2
+
+root@frog-LeoBook-16S:~/ros2_px4_ws/Micro-XRCE-DDS-Agent# lsb_release -a
+No LSB modules are available.
+Distributor ID: Ubuntu
+Description:    Ubuntu 22.04.5 LTS
+Release:        22.04
+Codename:       jammy
+

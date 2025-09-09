@@ -6,11 +6,9 @@
       <uri>x500</uri>
     </include>
     
-    
-
     <!-- Вставляем камеру здесь: Новый link с сенсором -->
     <!-- TODO: <link name="camera_link"> or <link name="base_link"> -->
-    <link name="vision">
+    <link name="vision_link">
       <pose>0 0 0.19 0 0 0</pose>  <!-- Положение камеры на дроне: спереди, вниз (x y z roll pitch yaw). Подстрой под себя, напр. pitch=1.57 для 90° вниз -->
       <inertial>
         <mass>0.01</mass>  <!-- Маленькая масса для камеры -->
@@ -40,19 +38,25 @@
           </box>
         </geometry>
       </collision>
-      <!-- TODO: name="camera" ??? -->
+      <!-- TODO: name="camera" name="vision" ??? -->
       <sensor name="vision" type="camera">
-        <pose>0 0 0 0 0 0</pose>  <!-- Поза относительно link -->
+        <pose>0 0 0 0 1.57 0</pose>  <!-- Поза относительно link -->
         <camera>
           <horizontal_fov>1.047</horizontal_fov>  <!-- FOV ~60° -->
           <image>
             <width>640</width>
             <height>480</height>
+            <format>R8G8B8</format>
           </image>
           <clip>
             <near>0.1</near>
             <far>100</far>
           </clip>
+          <noise>
+            <type>gaussian</type>  <!-- Опционально: шум -->
+            <mean>0.0</mean>
+            <stddev>0.007</stddev>
+          </noise>
           <distortion>
             <k1>0.0</k1>  <!-- Добавь дисторсию, если нужно симулировать реальную камеру -->
             <k2>0.0</k2>
@@ -61,7 +65,25 @@
             <p2>0.0</p2>
           </distortion>
         </camera>
-        <plugin filename="gz-sim-camera-system" name="gz::sim::systems::Camera"></plugin>  <!-- Стандартный плагин камеры -->
+
+
+        <always_on>true</always_on>
+        <update_rate>30</update_rate>
+        <visualize>true</visualize>
+        <topic>image</topic>
+        <!-- Стандартный плагин камеры - [not supported] -->
+        <!-- <plugin filename="gz-sim-camera-system" name="gz::sim::systems::Camera"></plugin>   -->
+
+        <!-- Правильный плагин для публикации в ROS2 -->
+        <!-- <plugin filename="libros_gz_sim.so" name="ros_gz_sim::ROS2Camera">
+          <ros>
+            <namespace>custom_x500_vision</namespace> 
+            <topic>image_raw</topic>
+            <camera_info_topic>camera_info</camera_info_topic>
+            <frame_name>camera_link</frame_name>
+          </ros>
+        </plugin> -->
+
       </sensor>
     </link>
     
@@ -70,24 +92,11 @@
     <!-- base_link — основной link дрона из x500 -->
     <joint name="vision_joint" type="fixed">
       <parent>base_link</parent>  
-      <child>vision</child>
+      <child>vision_link</child>
     </joint>
-    
-    <!-- ROS2 бридж для публикации изображений (добавь внутри <sensor>, но здесь для примера после) -->
-    <!-- Если бридж не в сенсоре, добавь как отдельный плагин в model -->
-    <plugin filename="gz-sim-ros2-bridge-system" name="gz::sim::systems::Ros2BridgePlugin">
-      <topic>/image_raw</topic>
-      <msg_type>sensor_msgs/msg/Image</msg_type>
-      <topic>/camera_info</topic>
-      <msg_type>sensor_msgs/msg/CameraInfo</msg_type>
-    </plugin>
-    
-    <!-- TF broadcaster для фрейма camera_link -->
-    <!-- Переименуй vision на camera_link, если хочешь матч с твоим кодом -->
-    <plugin filename="gz-sim-tf-broadcaster-system" name="gz::sim::systems::TfBroadcaster">
-      <frame_id>camera_link</frame_id>  
-    </plugin>
-    
+
+  
+    <!-- <plugin filename="libgz-sim8-sensors-system.so" name="gz::sim::systems::Sensors"/> -->
 
     <!-- source odometry file -->
     <plugin
