@@ -133,10 +133,11 @@ RUN pip3 install --upgrade pip && \
 RUN mkdir -p ${CURRENT_ROS_WS}/src \
     && cd ${CURRENT_ROS_WS} \
     && git clone -b v2.4.2 https://github.com/eProsima/Micro-XRCE-DDS-Agent.git \
-    && git clone https://github.com/PX4/PX4-Autopilot.git --recursive \
     # hand build px4_msgs
     && git clone https://github.com/PX4/px4_msgs.git  \
-    && git clone https://github.com/PX4/px4_ros_com.git
+    && git clone https://github.com/PX4/px4_ros_com.git \
+    && cd src/ \
+    && git clone https://github.com/PX4/PX4-Autopilot.git --recursive 
 
 # build and setup micro xrce agent 
 RUN cd ${CURRENT_ROS_WS}/Micro-XRCE-DDS-Agent \
@@ -164,7 +165,7 @@ RUN wget https://d176tv9ibo4jno.cloudfront.net/builds/master/QGroundControl-x86_
 RUN git config --global safe.directory '*' \
     # git config --global --unset safe.directory
     # git config --global --unset-all safe.directory
-    && cd ${CURRENT_ROS_WS}/PX4-Autopilot \
+    && cd ${CURRENT_ROS_WS}/src/PX4-Autopilot \
     && bash ./Tools/setup/ubuntu.sh \
     && git submodule update --init --recursive
 
