@@ -135,9 +135,12 @@ RUN mkdir -p ${CURRENT_ROS_WS}/src \
     && git clone -b v2.4.2 https://github.com/eProsima/Micro-XRCE-DDS-Agent.git \
     # hand build px4_msgs
     && git clone https://github.com/PX4/px4_msgs.git  \
-    && git clone https://github.com/PX4/px4_ros_com.git \
-    && cd src/ \
-    && git clone https://github.com/PX4/PX4-Autopilot.git --recursive 
+    && git clone https://github.com/PX4/px4_ros_com.git 
+    # strangely not working, unfortunately
+    # && cd src/ \
+    # && git clone https://github.com/PX4/PX4-Autopilot.git --recursive 
+
+COPY PX4-Autopilot ${CURRENT_ROS_WS}/src/PX4-Autopilot/
 
 # build and setup micro xrce agent 
 RUN cd ${CURRENT_ROS_WS}/Micro-XRCE-DDS-Agent \
