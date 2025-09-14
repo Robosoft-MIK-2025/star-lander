@@ -6,6 +6,20 @@ ENV ROS_DISTRO=humble
 
 ENV CURRENT_ROS_WS=/root/ros2_px4_ws
 
+# Добавить для GUI troubleshooting: enable software rendering if no GPU
+# Если GPU не работает, используйте llvmpipe (медленно, но стабильно)
+
+# include this if prefer CPU rendering
+ENV LIBGL_ALWAYS_SOFTWARE=1 
+
+# include this if prefer GPU rendering
+# RUN apt-get update && apt-get upgrade -y \
+#     && apt-get install -y \
+#     intel-media-va-driver \
+#     intel-opencl-icd \
+#     mesa-va-drivers \
+#     libgl1-mesa-dri
+
 # Set arguments for user creation
 ARG USERNAME=mobile
 ARG USER_UID=1000
@@ -23,6 +37,7 @@ RUN usermod -s /bin/bash mobile
 # Update and install necessary packages
 RUN apt-get update && apt-get upgrade -y \
     && apt-get install -y nano sudo curl gnupg2 lsb-release net-tools python3-pip \
+    # gpu drivers for my intel gpu [you may exclude it, if not neccessary]
     && curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | apt-key add -
 
 # Install slcan-utils from source if not available
@@ -39,7 +54,6 @@ RUN apt-get update && apt-get upgrade -y && \
     git \
     python3-pip \
     ros-${ROS_DISTRO}-tf2-tools \
-    ros-${ROS_DISTRO}-gazebo-ros \
     ros-${ROS_DISTRO}-robot-state-publisher \
     ros-${ROS_DISTRO}-joint-state-publisher \
     ros-${ROS_DISTRO}-xacro \
@@ -54,46 +68,50 @@ RUN apt-get update && apt-get upgrade -y && \
     ros-${ROS_DISTRO}-gz-ros2-control \
     ros-${ROS_DISTRO}-v4l2-camera \
     ros-${ROS_DISTRO}-camera-calibration \
-    ros-${ROS_DISTRO}-gazebo-ros-pkgs \
+    # gazebo classic package [prohibited for gazebo fortress !!!]
+    # ros-${ROS_DISTRO}-gazebo-ros-pkgs \
+    # ros-${ROS_DISTRO}-gazebo-ros \
     ros-${ROS_DISTRO}-nav2-bringup \
     libcanberra-gtk-module \
     libcanberra-gtk3-module \
     at-spi2-core \
     x11-apps \
     xauth \
-    ros-${ROS_DISTRO}-ros-gz \
-    ros-${ROS_DISTRO}-ros-gz-bridge \
-    ros-${ROS_DISTRO}-ros-gz-sim \
-    ros-${ROS_DISTRO}-ros-gz-interfaces \
+    # ros-${ROS_DISTRO}-ros-gz \
+    # ros-${ROS_DISTRO}-ros-gz-bridge \
+    # ros-${ROS_DISTRO}-ros-ign-sim \
+    ros-${ROS_DISTRO}-ros-ign-interfaces \
     ros-${ROS_DISTRO}-ros-ign-bridge \
+    ros-${ROS_DISTRO}-ros-ign \
+    ros-${ROS_DISTRO}-ros-ign-bridge \
+    ros-${ROS_DISTRO}-ign-ros2-control \
+    # ros-humble-ign-ros2-control \
+    # ros-humble-gazebo-ros-pkgs \
     --fix-missing
 
 # mine
+    # for AppImage extract
+    # for camera and ros2 additional packages
+    # instead of git repo for faster use [not supported, only ROS1]
+    # ros-${ROS_DISTRO}-px4-msgs 
 RUN apt-get update && apt-get upgrade -y && \
     apt-get install -y \
     wget \
-    # for AppImage extract
     libfuse2 \ 
     fuse \
     squashfs-tools \
-    # for camera and ros2 additional packages
     v4l-utils \
     ros-${ROS_DISTRO}-rviz-default-plugins \
-    ros-${ROS_DISTRO}-rqt-tf-tree \
-    # instead of git repo for faster use [not supported, only ROS1]
-    # ros-${ROS_DISTRO}-px4-msgs 
+    ros-${ROS_DISTRO}-rqt-tf-tree 
+    # ros-${ROS_DISTRO}-gz-tools-vendor \
+    # ros-${ROS_DISTRO}-gz-sim-vendor 
 
-    ros-${ROS_DISTRO}-ros-gz \
-    ros-${ROS_DISTRO}-ros-gz-bridge \
-    ros-${ROS_DISTRO}-ros-gz-sim \
-    ros-${ROS_DISTRO}-ros-gz-interfaces \
-
-    ros-${ROS_DISTRO}-ros-ign-bridge
-
+# Add OSRF repo for Ignition Fortress
+# install gazebo, Ignition Fortress (GZ 6)
 RUN sudo curl https://packages.osrfoundation.org/gazebo.gpg --output /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg \
     && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] https://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null \
     && sudo apt-get update -y \
-    && sudo apt-get install -y gz-harmonic
+    && sudo apt-get install -y gz-fortress ignition-fortress
 
 # NEW: Добавляем зависимости для PX4 (из ubuntu.sh скрипта PX4)
 RUN apt-get update && apt-get install -y \
