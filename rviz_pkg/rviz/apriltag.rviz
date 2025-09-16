@@ -36,7 +36,7 @@ Visualization Manager:
       Frame Timeout: 1
       Frames:
         All Enabled: true
-        camera_link:
+        x500_vision_0/vision_link/vision: # camera_link
           Value: true
         map:
           Value: true
@@ -47,7 +47,7 @@ Visualization Manager:
       Show Names: true
       Tree:
         map:
-          camera_link:
+          x500_vision_0/vision_link/vision: # camera_link
             {}
       Update Interval: 0
       Value: true
@@ -62,7 +62,7 @@ Visualization Manager:
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /image_raw
+        Value: /world/default/model/x500_vision_0/link/vision_link/sensor/vision/image # /image_raw
       Value: true
       Visibility:
         Grid: true

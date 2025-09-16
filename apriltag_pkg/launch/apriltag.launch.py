@@ -27,8 +27,8 @@ def generate_launch_description():
             name='apriltag',
             output='screen',
             remappings=[
-                ('image_rect', '/image_raw'),  # Топик изображения из v4l2_camera
-                ('camera_info', '/camera_info')  # Калибровка камеры
+                ('image_rect', '/world/default/model/x500_vision_0/link/vision_link/sensor/vision/image'),  # /image_raw Топик изображения из v4l2_camera
+                ('camera_info', '/world/default/model/x500_vision_0/link/vision_link/sensor/vision/camera_info')  # /camera_info Калибровка камеры из v4l2_camera
             ],
             parameters=[
                 apriltag_config

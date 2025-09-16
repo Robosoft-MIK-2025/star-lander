@@ -18,21 +18,21 @@ def generate_launch_description():
         DeclareLaunchArgument('camera_info_url', default_value=f'file://{camera_info_path}', description='URL to camera calibration file'), # /root/ros2_px4_ws/src/camera_pkg/config/ost.yaml
 
         # Запуск узла v4l2_camera_node с параметрами
-        Node(
-            package='v4l2_camera',
-            executable='v4l2_camera_node',
-            name='v4l2_camera_node',
-            output='screen',
-            parameters=[{
-                'video_device': LaunchConfiguration('video_device'),
-                'image_size': LaunchConfiguration('image_size'),
-                'output_encoding': LaunchConfiguration('output_encoding'),
-                'camera_info_url': LaunchConfiguration('camera_info_url'),
-                'camera_frame_id': 'camera_link',
+        # Node(
+        #     package='v4l2_camera',
+        #     executable='v4l2_camera_node',
+        #     name='v4l2_camera_node',
+        #     output='screen',
+        #     parameters=[{
+        #         'video_device': LaunchConfiguration('video_device'),
+        #         'image_size': LaunchConfiguration('image_size'),
+        #         'output_encoding': LaunchConfiguration('output_encoding'),
+        #         'camera_info_url': LaunchConfiguration('camera_info_url'),
+        #         'camera_frame_id': 'camera_link',
 
-            }],
-            # arguments=['--ros-args', '--log-level', 'v4l2_camera_node:=debug']
-        ),
+        #     }],
+        #     # arguments=['--ros-args', '--log-level', 'v4l2_camera_node:=debug']
+        # ),
 
 #         ros2 run v4l2_camera v4l2_camera_node --ros-args \
 #   -p video_device:=/dev/video0 \
@@ -45,7 +45,19 @@ def generate_launch_description():
             package='tf2_ros',
             executable='static_transform_publisher',
             name='static_tf_camera_link_next_to_map',
-            arguments=['0.25', '0.25', '0', '0', '0', '0', 'map', 'camera_link']
-        )
+            arguments=['0.25', '0.25', '0', '0', '0', '0', 'map', 'x500_vision_0/vision_link/vision'] # vision_optical camera_link x500_vision_0/vision_link/vision
+        ),
         # ros2 run tf2_ros static_transform_publisher 0.25 0.25 0 0 0 0 map camera_link
+
+        Node(
+            package='ros_gz_bridge',
+            executable='parameter_bridge',
+            name='image_camera_info_from_gz_to_ros',
+            arguments=['/world/default/model/x500_vision_0/link/vision_link/sensor/vision/image@sensor_msgs/msg/Image[gz.msgs.Image', '/world/default/model/x500_vision_0/link/vision_link/sensor/vision/camera_info@sensor_msgs/msg/CameraInfo[gz.msgs.CameraInfo']
+        )
+
+
+# ros2 run ros_gz_bridge parameter_bridge /image@sensor_msgs/msg/Image[gz.msgs.Image /camera_info@sensor_msgs/msg/CameraInfo[gz.msgs.CameraInfo
+
+# ros2 run ros_gz_bridge parameter_bridge /world/default/model/x500_vision_0/link/vision_link/sensor/vision/image@sensor_msgs/msg/Image[gz.msgs.Image /world/default/model/x500_vision_0/link/vision_link/sensor/vision/camera_info@sensor_msgs/msg/CameraInfo[gz.msgs.CameraInfo
     ])

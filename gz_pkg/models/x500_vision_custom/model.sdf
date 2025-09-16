@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<sdf version='1.7'> <!-- 1.9 -->
+<sdf version='1.9'> <!-- 1.9 1.7 -->
   <model name='custom_x500_vision'>
     <!-- source base x500 -->
     <include merge='true'>
@@ -64,13 +64,18 @@
             <p1>0.0</p1>
             <p2>0.0</p2>
           </distortion>
+          <optical_frame>camera_link</optical_frame> 
+           <!-- Опционально: Устанавливает оптический фрейм для TF (в Harmonic SDF 1.9). Это будет frame_id в CameraInfo, если не переопределить в плагине -->
+           <!-- vision_optical -->
+           <frame_id>camera_link</frame_id>
         </camera>
 
 
         <always_on>true</always_on>
         <update_rate>30</update_rate>
         <visualize>true</visualize>
-        <topic>image</topic>
+        <!-- <topic>image</topic> -->
+
         <!-- Стандартный плагин камеры - [not supported] -->
         <!-- <plugin filename="gz-sim-camera-system" name="gz::sim::systems::Camera"></plugin>   -->
 
