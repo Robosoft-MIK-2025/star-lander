@@ -66,6 +66,8 @@ RUN apt-get update && apt-get upgrade -y && \
     ros-${ROS_DISTRO}-ros-gz-sim \
     ros-${ROS_DISTRO}-ros-gz-interfaces \
     ros-${ROS_DISTRO}-ros-ign-bridge \
+    # to fix ros2 bridge
+    ros-${ROS_DISTRO}-ros-gzharmonic* \
     --fix-missing
 
 # mine
