@@ -1,0 +1,6 @@
+This model is not for use
+it is dublicate of
+PX4-Autopilot/Tools/simulation/gz/models/x500_vision
+
+Original x500_vision model was changed to launch drone with camera simply by
+"make px4_sitl gz_x500_vision"

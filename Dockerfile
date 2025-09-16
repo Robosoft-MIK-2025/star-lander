@@ -82,12 +82,10 @@ RUN apt-get update && apt-get upgrade -y && \
     ros-${ROS_DISTRO}-rqt-tf-tree \
     # instead of git repo for faster use [not supported, only ROS1]
     # ros-${ROS_DISTRO}-px4-msgs 
-
     ros-${ROS_DISTRO}-ros-gz \
     ros-${ROS_DISTRO}-ros-gz-bridge \
     ros-${ROS_DISTRO}-ros-gz-sim \
     ros-${ROS_DISTRO}-ros-gz-interfaces \
-
     ros-${ROS_DISTRO}-ros-ign-bridge
 
 RUN sudo curl https://packages.osrfoundation.org/gazebo.gpg --output /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg \

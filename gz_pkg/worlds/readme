@@ -1,0 +1,6 @@
+This world is not for use
+'default.sdf' is dublicate of
+PX4-Autopilot/Tools/simulation/gz/worlds/default.sdf
+
+Original world was changed due to simply launch env by
+"make px4_sitl gz_x500_vision"
