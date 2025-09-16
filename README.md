@@ -78,7 +78,7 @@ docker compose exec terminal bash
 (чтобы проверить что всё работает)
 ```bash
 cd PX4-Autopilot/
-make px4_sitl gz_x500
+make px4_sitl gz_x500_vision
 ```
 
 Подключитесь к контейнеру из других терминалов:  
