@@ -77,7 +77,7 @@ docker compose exec terminal bash
 Сборка репозитория PX4 и запуск тестового дрона
 (чтобы проверить что всё работает)
 ```bash
-cd PX4-Autopilot/
+cd src/PX4-Autopilot/
 make px4_sitl gz_x500_vision
 ```
 

@@ -61,7 +61,7 @@ private:
 
   void on_timer()
   {
-    std::string from_frame = "camera_link";  // Фрейм камеры
+    std::string from_frame = "x500_vision_0/vision_link/vision";  // Фрейм камеры: camera_link
     std::string to_frame = "tag36h11:0";     // Фрейм AprilTag
 
     geometry_msgs::msg::TransformStamped transform;
