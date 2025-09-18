@@ -1,6 +1,10 @@
-This world is not for use
-'default.sdf' is dublicate of
-PX4-Autopilot/Tools/simulation/gz/worlds/default.sdf
+Worlds that you should use it:
+"PX4-Autopilot/Tools/simulation/gz/worlds/default.sdf.dark"
+"PX4-Autopilot/Tools/simulation/gz/worlds/default.sdf.light"
 
-Original world was changed due to simply launch env by
+rename the correct version to 
+
+"PX4-Autopilot/Tools/simulation/gz/worlds/default.sdf"
+
+for simple launch env by
 "make px4_sitl gz_x500_vision"
