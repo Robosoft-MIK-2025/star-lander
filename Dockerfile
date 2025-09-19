@@ -67,7 +67,7 @@ RUN apt-get update && apt-get upgrade -y && \
     ros-${ROS_DISTRO}-ros-gz-interfaces \
     ros-${ROS_DISTRO}-ros-ign-bridge \
     # to fix ros2 bridge
-    ros-${ROS_DISTRO}-ros-gzharmonic* \
+    # ros-${ROS_DISTRO}-ros-gzharmonic* \
     --fix-missing
 
 # mine
@@ -189,6 +189,9 @@ RUN apt-get update \
 
 # Clean up
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# finally setup bridge between ros, gazebo
+RUN apt update -y && apt install -y ros-${ROS_DISTRO}-ros-gzharmonic* --fix-missing
 
 # mine
 RUN echo "source ${CURRENT_ROS_WS}/src/.bashrc" >> /root/.bashrc
