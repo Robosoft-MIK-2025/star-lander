@@ -14,7 +14,8 @@ def generate_launch_description():
                     'launch',
                     'camera.launch.py'
                 ])
-            )
+            ),
+            launch_arguments=[('use_sim_time', 'true')]
         ),
         # Запуск AprilTag
         IncludeLaunchDescription(
@@ -24,7 +25,8 @@ def generate_launch_description():
                     'launch',
                     'apriltag.launch.py'
                 ])
-            )
+            ),
+            launch_arguments=[('use_sim_time', 'true')]
         ),
 
         # Запуск Tf_listener_and_command_giver
@@ -35,7 +37,8 @@ def generate_launch_description():
                     'launch',
                     'drone_tf_command_publisher.launch.py'
                 ])
-            )
+            ),
+            launch_arguments=[('use_sim_time', 'true')]
         ),
 
         # Запуск RViz2
@@ -46,6 +49,7 @@ def generate_launch_description():
                     'launch',
                     'rviz.launch.py'
                 ])
-            )
+            ),
+            launch_arguments=[('use_sim_time', 'true')]
         )
     ])

@@ -31,7 +31,8 @@ def generate_launch_description():
                 ('camera_info', '/world/default/model/x500_vision_0/link/vision_link/sensor/vision/camera_info')  # /camera_info Калибровка камеры из v4l2_camera
             ],
             parameters=[
-                apriltag_config
+                apriltag_config,
+                {'use_sim_time': True}
             ],
             arguments=['--ros-args', '--log-level', 'apriltag:=ERROR'] # debug
         )

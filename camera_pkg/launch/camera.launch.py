@@ -45,7 +45,8 @@ def generate_launch_description():
             package='tf2_ros',
             executable='static_transform_publisher',
             name='static_tf_camera_link_next_to_map',
-            arguments=['0.25', '0.25', '0', '0', '0', '0', 'map', 'x500_vision_0/vision_link/vision'] # vision_optical camera_link x500_vision_0/vision_link/vision
+            arguments=['0.25', '0.25', '0', '0', '0', '0', 'map', 'x500_vision_0/vision_link/vision'], # vision_optical camera_link x500_vision_0/vision_link/vision
+            parameters=[{'use_sim_time': True}]
         ),
         # ros2 run tf2_ros static_transform_publisher 0.25 0.25 0 0 0 0 map camera_link
 
@@ -53,7 +54,12 @@ def generate_launch_description():
             package='ros_gz_bridge',
             executable='parameter_bridge',
             name='image_camera_info_from_gz_to_ros',
-            arguments=['/world/default/model/x500_vision_0/link/vision_link/sensor/vision/image@sensor_msgs/msg/Image[gz.msgs.Image', '/world/default/model/x500_vision_0/link/vision_link/sensor/vision/camera_info@sensor_msgs/msg/CameraInfo[gz.msgs.CameraInfo']
+            arguments=[
+                '/world/default/model/x500_vision_0/link/vision_link/sensor/vision/image@sensor_msgs/msg/Image[gz.msgs.Image',
+                '/world/default/model/x500_vision_0/link/vision_link/sensor/vision/camera_info@sensor_msgs/msg/CameraInfo[gz.msgs.CameraInfo',
+                '/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock'
+            ],
+            parameters=[{'use_sim_time': True}]
         )
 
 

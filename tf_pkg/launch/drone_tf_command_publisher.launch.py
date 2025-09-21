@@ -15,7 +15,7 @@ def generate_launch_description():
             executable='drone_tf_listener',
             name='listener',
             parameters=[
-                # TODO::
+                {'use_sim_time': True}
             ]
         ),
     ])

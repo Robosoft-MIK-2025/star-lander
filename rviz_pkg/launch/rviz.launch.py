@@ -17,6 +17,7 @@ def generate_launch_description():
                 'apriltag.rviz'
             ]),
             #'--ros-args', '--log-level' #, 'rviz2:=debug'  # , 'debug' Добавь это для детальных логов (или 'DEBUG' в uppercase, если нужно)
-            ]
+            ],
+            parameters=[{'use_sim_time': True}]
         )
     ])
