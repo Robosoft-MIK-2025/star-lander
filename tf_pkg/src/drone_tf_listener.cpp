@@ -7,6 +7,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <limits>  // Для std::numeric_limits (NaN)
 
 #include "rclcpp/rclcpp.hpp"
 #include "tf2/exceptions.h"
@@ -18,11 +19,13 @@
 #include "tf2/LinearMath/Matrix3x3.h"   // Для tf2::Matrix3x3 и getRPY
 
 #include "px4_msgs/msg/vehicle_command.hpp"
+#include "px4_msgs/msg/vehicle_global_position.hpp"
 
 using namespace std::chrono_literals;
 
 class DroneTFListener : public rclcpp::Node
 {
+
 public:
   DroneTFListener()
   : Node("drone_tf_listener")
@@ -34,16 +37,30 @@ public:
     // Таймер для запроса трансформаций каждую секунду
     timer_ = this->create_wall_timer(1s, std::bind(&DroneTFListener::on_timer, this));
 
-    // Пороги для команд (можно сделать параметрами)
+    // TODO: Сделать параметрами ros2 ???!!!!
+
+    // Пороги для команд перемещения (можно сделать параметрами)
     lateral_threshold_ = 0.1;  // м для x/y
     depth_threshold_min_ = 0.5;  // м, слишком близко
     depth_threshold_max_ = 1.0;  // м, слишком далеко
 
+    // пороги для команд поворота
     roll_treshold = 0.2;
     pitch_treshold = 0.1;
     yaw_treshold = 0.1;
 
+    // END TODO
+
     command_publisher_ = this->create_publisher<px4_msgs::msg::VehicleCommand>("/fmu/in/vehicle_command", 10);
+
+    global_pos_sub_ = this->create_subscription<px4_msgs::msg::VehicleGlobalPosition>("/fmu/out/vehicle_global_position",
+      10,
+      std::bind(
+        &DroneTFListener::global_pos_callback,
+        this,
+        std::placeholders::_1
+      )
+    );
   }
 
 private:
@@ -59,10 +76,26 @@ private:
   double pitch_treshold;
   double yaw_treshold;
 
+  // Глобальная позиция дрона - подписка
+  rclcpp::Subscription<px4_msgs::msg::VehicleGlobalPosition>::SharedPtr global_pos_sub_;
+  // Сами координаты глобальной позиции
+  double current_lat_ = 0.0,
+        current_lon_ = 0.0,
+        current_alt_ = 0.0;
+
+  bool isFirst = false;
+  rclcpp::Time first;
+
   void on_timer()
   {
     std::string from_frame = "x500_vision_0/vision_link/vision";  // Фрейм камеры: camera_link
     std::string to_frame = "tag36h11:0";     // Фрейм AprilTag
+
+    // Сначала проверяем, доступна ли TF (с timeout 100мс)
+      if (!tf_buffer_->canTransform(from_frame, to_frame, tf2::TimePointZero, tf2::durationFromSec(0.1))) {
+        RCLCPP_WARN(this->get_logger(), "TF от %s к %s недоступна в течение 0.1с.", from_frame.c_str(), to_frame.c_str());
+        return;
+      }
 
     geometry_msgs::msg::TransformStamped transform;
     try {
@@ -71,6 +104,19 @@ private:
     } catch (const tf2::TransformException & ex) {
       RCLCPP_WARN(this->get_logger(), "Не удалось получить трансформацию от %s к %s: %s",
                   from_frame.c_str(), to_frame.c_str(), ex.what());
+      return;
+    }
+
+    // Проверяем свежесть TF (stamp должен быть не старше 1с)
+    rclcpp::Time now = this->get_clock()->now();
+    rclcpp::Time tf_stamp(transform.header.stamp);
+    if ((now - tf_stamp).seconds() > 0.31) {
+      RCLCPP_WARN(this->get_logger(), "TF от %s к %s устарела (stamp: %f сек назад). Пропускаем.", 
+                  from_frame.c_str(), to_frame.c_str(), (now - tf_stamp).seconds());
+      
+      // Отмена reposition: Отправляем hover (hold на месте)
+      // крч говорим дрону зависнуть на месте
+      send_hover_command();
       return;
     }
 
@@ -104,8 +150,26 @@ private:
 
   // Если центрировано, отправь посадку (на текущей позиции или с координатами)
     if (translations == "на месте (цель центрирована)" && rotations == "на месте (цель центрирована)") {
-      send_land_command(47.397742, 8.545594, 0.0);  // Пример координат (lat, lon, alt AMSL). 0.0 для текущей.
-      // TODO: Или без параметров: send_land_command(); для посадки на текущей позиции???
+      // send_land_command(47.397742, 8.545594, 0.0);  // Пример координат (lat, lon, alt AMSL). 0.0 для текущей.
+      if (!isFirst)
+      {
+        first = this->get_clock()->now();
+        isFirst = true;
+      }
+      if ((this->get_clock()->now() - first).seconds() > 10.0)
+      {
+        send_land_command();
+      }
+    } else {
+      // Вычисляем желаемые offsets (в NED: x=forward, y=right, z=down; но адаптируй по осям камеры)
+      // Предполагаем: x=lat (North), y=lon (East), z=alt (Down, так что -z для up)
+      double desired_lat = current_lat_ + (y / 111111.0); // ~1м = 1/111111 deg lat (примерно)
+      double desired_lon = current_lon_ + (x / (111111.0 * cos(current_lat_ * M_PI / 180))); // Корректировка для lon
+      float desired_alt = current_alt_ - z; // Down positive in NED
+      float desired_yaw = 0.0f; // Или текущий + yaw (в deg)
+
+      send_reposition_command(desired_lat, desired_lon, desired_alt, desired_yaw);
+      RCLCPP_INFO(this->get_logger(), "Отправлена команда перемещения для центрирования.");
     }
   }
 
@@ -152,7 +216,7 @@ private:
   {
     std::string cmd = "";
 
-    if (std::abs(roll + 3.0) > roll_treshold) {
+    if (std::abs(roll) > roll_treshold) { // + 3.0
       if (roll > 0) {
         cmd += "наклонись вперёд; ";
       } else {
@@ -207,6 +271,40 @@ void send_land_command(double latitude = 0.0, double longitude = 0.0, float alti
 
     command_publisher_->publish(msg);
     RCLCPP_INFO(this->get_logger(), "Отправлена команда посадки на координаты: lat=%.6f, lon=%.6f, alt=%.2f", latitude, longitude, altitude);
+  }
+
+  void send_reposition_command(double latitude, double longitude, float altitude, float yaw) {
+    auto msg = px4_msgs::msg::VehicleCommand();
+    msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
+    msg.command = px4_msgs::msg::VehicleCommand::VEHICLE_CMD_DO_REPOSITION; // 192
+    msg.param1 = 0.0f; // Flags (0 для default: reposition and hold)
+    msg.param2 = 0.0f; // Loiter radius (0 ignore)
+    msg.param3 = 0.0f; // Loiter direction
+    msg.param4 = yaw; // Yaw (deg, NaN ignore)
+    msg.param5 = static_cast<float>(latitude);
+    msg.param6 = static_cast<float>(longitude);
+    msg.param7 = altitude;
+    msg.target_system = 1;
+    msg.target_component = 1;
+    msg.source_system = 255;
+    msg.source_component = 0;
+    msg.from_external = true;
+    msg.confirmation = 0;
+    command_publisher_->publish(msg);
+    RCLCPP_INFO(this->get_logger(), "Отправлена команда REPOSITION: lat=%.6f, lon=%.6f, alt=%.2f, yaw=%.2f", latitude, longitude, altitude, yaw);
+  }
+
+  void send_hover_command() {
+    double nan = std::numeric_limits<double>::quiet_NaN();
+    float nan_f = std::numeric_limits<float>::quiet_NaN();
+    send_reposition_command(nan, nan, nan_f, nan_f);  // NaN в lat/lon/alt/yaw — hold current
+    RCLCPP_INFO(this->get_logger(), "Отправлена команда HOVER (hold на месте) из-за устаревшей TF.");
+  }
+
+  void global_pos_callback(const px4_msgs::msg::VehicleGlobalPosition::SharedPtr msg) {
+    current_lat_ = msg->lat;
+    current_lon_ = msg->lon;
+    current_alt_ = msg->alt; // AMSL
   }
 };
 
