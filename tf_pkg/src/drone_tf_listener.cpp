@@ -164,55 +164,29 @@ private:
 
   // Если центрировано, отправь посадку (на текущей позиции или с координатами)
     if (translations == "на месте (цель центрирована)" && rotations == "на месте (цель центрирована)") {
-      // send_land_command(47.397742, 8.545594, 0.0);  // Пример координат (lat, lon, alt AMSL). 0.0 для текущей.
-      // if (!isFirst)
-      // {
-      //   first = this->get_clock()->now();
-      //   isFirst = true;
-      // }
-      // if ((this->get_clock()->now() - first).seconds() > 10.0)
-      // {
-      //   send_land_command();
-      // }
+
       send_land_command();
-      // if (!isFirst)
-      // {
-      //   first = this->get_clock()->now();
-      //   isFirst = true;
-      // }
-      // if ((this->get_clock()->now() - first).seconds() > 10.0)
-      // {
-      // }
+
     } else {
       // Вычисляем желаемые offsets (в NED: x=forward, y=right, z=down; но адаптируй по осям камеры)
       // Предполагаем: x=lat (North), y=lon (East), z=alt (Down, так что -z для up)
-      long double desired_lat = current_lat_ + (y / 111111.0); // ~1м = 1/111111 deg lat (примерно)
-      long double desired_lon = current_lon_ + (x / (111111.0 * cos(current_lat_ * M_PI / 180))); // Корректировка для lon
-      float desired_alt = current_alt_ - z; // Down positive in NED
+
+      long double desired_lat = current_lat_ + (y / 111111.0L); // ~1м = 1/111111 deg lat (примерно)
+      long double desired_lon = current_lon_ + (x / (111111.0L * static_cast<long double>(cos(current_lat_ * M_PI / 180)))); // Корректировка для lon
+      float desired_alt = std::numeric_limits<float>::quiet_NaN(); // Down positive in NED // current_alt_ - z
       float desired_yaw = 0.0f; // Или текущий + yaw (в deg)
-        // x = 100;
-        // y = 0;
-        if (!isFirst)
-        {
-          long double desired_lat = current_lat_ + (y / 111111.0L); // ~1м = 1/111111 deg lat (примерно)
-          long double desired_lon = current_lon_ + (x / (111111.0L * static_cast<long double>(cos(current_lat_ * M_PI / 180)))); // Корректировка для lon
-          float desired_alt = std::numeric_limits<float>::quiet_NaN(); // Down positive in NED // current_alt_ - z
-          float desired_yaw = 0.0f; // Или текущий + yaw (в deg)
-          RCLCPP_INFO(
-            this->get_logger(), "current: %.10Lf %.10Lf %.10Lf\ntransform: %.10Lf %.10Lf %.10Lf\ndesired: %.10Lf %.10Lf %.10f\n",
-            current_lat_,
-            current_lon_,
-            current_alt_,
-            x, y, z,
-            desired_lat,
-            desired_lon,
-            desired_alt
-          );
-          send_reposition_command(desired_lat, desired_lon, desired_alt, desired_yaw);
-          RCLCPP_INFO(this->get_logger(), "Отправлена команда перемещения для центрирования.");
-          first = this->get_clock()->now();
-          isFirst = true;
-        }
+      RCLCPP_INFO(
+        this->get_logger(), "current: %.10Lf %.10Lf %.10Lf\ntransform: %.10Lf %.10Lf %.10Lf\ndesired: %.10Lf %.10Lf %.10f\n",
+        current_lat_,
+        current_lon_,
+        current_alt_,
+        x, y, z,
+        desired_lat,
+        desired_lon,
+        desired_alt
+      );
+      send_reposition_command(desired_lat, desired_lon, desired_alt, desired_yaw);
+      RCLCPP_INFO(this->get_logger(), "Отправлена команда перемещения для центрирования.");
 
       // send_reposition_command(desired_lat, desired_lon, desired_alt, desired_yaw);
       // RCLCPP_INFO(this->get_logger(), "Отправлена команда перемещения для центрирования.");
