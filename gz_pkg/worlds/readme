@@ -1,8 +1,10 @@
 Worlds that you should use it:
+(i mean move these models into these directories)
+
 "PX4-Autopilot/Tools/simulation/gz/worlds/default.sdf.dark"
 "PX4-Autopilot/Tools/simulation/gz/worlds/default.sdf.light"
 
-rename the correct version to 
+dublicate and rename the correct version to 
 
 "PX4-Autopilot/Tools/simulation/gz/worlds/default.sdf"
 

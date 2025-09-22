@@ -1,4 +1,4 @@
-You should use
+You should use (i mean move this model into this directory)
 "PX4-Autopilot/Tools/simulation/gz/models/x500_vision"
 
 Original x500_vision model was changed to launch drone with camera simply by

@@ -89,6 +89,8 @@ private:
 
   bool isFirst = false;
   rclcpp::Time first;
+  bool isSecond = false;
+  rclcpp::Time second;
 
   void on_timer()
   {
@@ -101,8 +103,12 @@ private:
     //   return;
     // }
 
-
-      if (!isFirst)
+      if (!isSecond)
+      {
+        second = this->get_clock()->now();
+        isSecond = true;
+      }
+      if (!isFirst and ((this->get_clock()->now() - second).seconds() > 15.0))
       {
         float desired_alt = std::numeric_limits<float>::quiet_NaN(); // Down positive in NED // current_alt_ - z
         float desired_yaw = 0.0f; // Или текущий + yaw (в deg)
@@ -165,7 +171,7 @@ private:
     catch (const tf2::TransformException & ex) {
     }
       
-    if ((this->get_clock()->now() - first).seconds() > 10.0)
+    if ((isFirst) and ((this->get_clock()->now() - first).seconds() > 10.0))
     {
       send_land_command();
     }
