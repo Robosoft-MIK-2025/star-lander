@@ -162,7 +162,6 @@ RUN wget https://d176tv9ibo4jno.cloudfront.net/builds/master/QGroundControl-x86_
     && mkdir -p /etc/systemd/system \
     && ln -sf /dev/null /etc/systemd/system/ModemManager.service
 
-
 # setup and install PX4-Autopilot
     # грёбанный костыль - против грёбанной защиты git
 RUN git config --global safe.directory '*' \

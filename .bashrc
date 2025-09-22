@@ -133,3 +133,8 @@ export GZ_SIM_SYSTEM_PLUGIN_PATH=/usr/lib/x86_64-linux-gnu/gz-sim-8/plugins:${GZ
 export GZ_PLUGIN_PATH=/opt/ros/humble/lib:/usr/lib/x86_64-linux-gnu/gz-sim-8/plugins:$GZ_PLUGIN_PATH
 
 export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu/gz-sim-8/plugins:$LD_LIBRARY_PATH
+
+# export GZ_GUI_CONFIG_PATH=${CURRENT_ROS_WS}/src/gz_pkg/drone_world.config
+
+# mkdir -p /root/.gz/gui
+# cp ${CURRENT_ROS_WS}/src/gz_pkg/drone_world.config /root/.gz/gui/gui.config
