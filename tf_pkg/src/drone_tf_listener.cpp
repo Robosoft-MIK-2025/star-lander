@@ -96,80 +96,53 @@ private:
     std::string to_frame = "tag36h11:0";     // Фрейм AprilTag
 
     // Сначала проверяем, доступна ли TF (с timeout 100мс)
-    if (!tf_buffer_->canTransform(from_frame, to_frame, tf2::TimePointZero, tf2::durationFromSec(0.1))) {
-      RCLCPP_WARN(this->get_logger(), "TF от %s к %s недоступна в течение 0.1с.", from_frame.c_str(), to_frame.c_str());
-      return;
-    }
-    if (!tf_buffer_->canTransform(from_frame, to_frame, tf2::TimePointZero, tf2::durationFromSec(0.1))) {
-      // RCLCPP_WARN(this->get_logger(), "TF от %s к %s недоступна в течение 0.1с.", from_frame.c_str(), to_frame.c_str());
-      return;
-    }
+    // if (!tf_buffer_->canTransform(from_frame, to_frame, tf2::TimePointZero, tf2::durationFromSec(0.1))) {
+    //   RCLCPP_WARN(this->get_logger(), "TF от %s к %s недоступна в течение 0.1с.", from_frame.c_str(), to_frame.c_str());
+    //   return;
+    // }
 
-    geometry_msgs::msg::TransformStamped transform;
-    try {
+
+      if (!isFirst)
+      {
+        float desired_alt = std::numeric_limits<float>::quiet_NaN(); // Down positive in NED // current_alt_ - z
+        float desired_yaw = 0.0f; // Или текущий + yaw (в deg)
+        send_reposition_command(47.3979706, 8.546283, desired_alt, desired_yaw);
+        isFirst = true;
+        first = this->get_clock()->now();
+      }
+      
+      try {
       // Запрос трансформации (последняя доступная)
-      transform = tf_buffer_->lookupTransform(from_frame, to_frame, tf2::TimePointZero);
-    } catch (const tf2::TransformException & ex) {
-      RCLCPP_WARN(this->get_logger(), "Не удалось получить трансформацию от %s к %s: %s",
-                  from_frame.c_str(), to_frame.c_str(), ex.what());
-      // RCLCPP_WARN(this->get_logger(), "Не удалось получить трансформацию от %s к %s: %s",
-      //             from_frame.c_str(), to_frame.c_str(), ex.what());
-      return;
-    }
+      geometry_msgs::msg::TransformStamped transform;
+    transform = tf_buffer_->lookupTransform(from_frame, to_frame, tf2::TimePointZero);
 
-    // Проверяем свежесть TF (stamp должен быть не старше 1с)
-    rclcpp::Time now = this->get_clock()->now();
-    rclcpp::Time tf_stamp(transform.header.stamp);
-    if ((now - tf_stamp).seconds() > 0.31) {
-      RCLCPP_WARN(this->get_logger(), "TF от %s к %s устарела (stamp: %f сек назад). Пропускаем.", 
-                  from_frame.c_str(), to_frame.c_str(), (now - tf_stamp).seconds());
-    if ((now - tf_stamp).seconds() > 1) {
-      // RCLCPP_WARN(this->get_logger(), "TF от %s к %s устарела (stamp: %f сек назад). Пропускаем.", 
-                  // from_frame.c_str(), to_frame.c_str(), (now - tf_stamp).seconds());
+          // Извлечение translation
+      long double x = transform.transform.translation.x;
+      long double y = transform.transform.translation.y;
+      long double z = transform.transform.translation.z;
 
-      // Отмена reposition: Отправляем hover (hold на месте)
-      // крч говорим дрону зависнуть на месте
-      send_hover_command();
-      // send_hover_command();
-      return;
-    }
+      const auto& rotate_tf2 = transform.transform.rotation;
 
-    // Извлечение translation
-    long double x = transform.transform.translation.x;
-    long double y = transform.transform.translation.y;
-    long double z = transform.transform.translation.z;
+      tf2::Quaternion q(
+        rotate_tf2.x,
+        rotate_tf2.y,
+        rotate_tf2.z,
+        rotate_tf2.w
+      );
 
-    const auto& rotate_tf2 = transform.transform.rotation;
+      tf2::Matrix3x3 m(q);
+      double roll, pitch, yaw;
+      m.getRPY(roll, pitch, yaw);
 
-    tf2::Quaternion q(
-      rotate_tf2.x,
-      rotate_tf2.y,
-      rotate_tf2.z,
-      rotate_tf2.w
-    );
+      // Генерация команд
+      std::string translations = generate_translations(x, y, z);
+      std::string rotations = generate_rotations(roll, pitch, yaw);
 
-    tf2::Matrix3x3 m(q);
-    double roll, pitch, yaw;
-    m.getRPY(roll, pitch, yaw);
+      // Вывод команд (как будто инструкции дрону)
+      // RCLCPP_INFO(this->get_logger(), "Трансформация: x=%.2f, y=%.2f, z=%.2f. Команды: %s\nПоворот дрона: x=%.2f, y=%.2f, z=%.2f, w=%.2f, roll=%.2f, pitch=%.2f, yaw=%.2f. Команды: %s", x, y, z, translations.c_str(), rotate_tf2.x, rotate_tf2.y, rotate_tf2.z, rotate_tf2.w, roll, pitch, yaw, rotations.c_str());
 
-    // Генерация команд
-    std::string translations = generate_translations(x, y, z);
-    std::string rotations = generate_rotations(roll, pitch, yaw);
-
-    // Вывод команд (как будто инструкции дрону)
-    // RCLCPP_INFO(this->get_logger(), "Трансформация: x=%.2f, y=%.2f, z=%.2f. Команды: %s\nПоворот дрона: x=%.2f, y=%.2f, z=%.2f, w=%.2f, roll=%.2f, pitch=%.2f, yaw=%.2f. Команды: %s", x, y, z, translations.c_str(), rotate_tf2.x, rotate_tf2.y, rotate_tf2.z, rotate_tf2.w, roll, pitch, yaw, rotations.c_str());
-
-    // сокращённая версия (без лютого засера лога)
-    RCLCPP_INFO(this->get_logger(), "Трансформация: Команды: %s\nПоворот дрона: Команды: %s", translations.c_str(),rotations.c_str());
-
-  // Если центрировано, отправь посадку (на текущей позиции или с координатами)
-    if (translations == "на месте (цель центрирована)" && rotations == "на месте (цель центрирована)") {
-
-      send_land_command();
-
-    } else {
-      // Вычисляем желаемые offsets (в NED: x=forward, y=right, z=down; но адаптируй по осям камеры)
-      // Предполагаем: x=lat (North), y=lon (East), z=alt (Down, так что -z для up)
+      // сокращённая версия (без лютого засера лога)
+      RCLCPP_INFO(this->get_logger(), "Трансформация: Команды: %s\nПоворот дрона: Команды: %s", translations.c_str(),rotations.c_str());
 
       long double desired_lat = current_lat_ + (y / 111111.0L); // ~1м = 1/111111 deg lat (примерно)
       long double desired_lon = current_lon_ + (x / (111111.0L * static_cast<long double>(cos(current_lat_ * M_PI / 180)))); // Корректировка для lon
@@ -185,14 +158,39 @@ private:
         desired_lon,
         desired_alt
       );
-      send_reposition_command(desired_lat, desired_lon, desired_alt, desired_yaw);
-      RCLCPP_INFO(this->get_logger(), "Отправлена команда перемещения для центрирования.");
-
       // send_reposition_command(desired_lat, desired_lon, desired_alt, desired_yaw);
-      // RCLCPP_INFO(this->get_logger(), "Отправлена команда перемещения для центрирования.");
+      // send_reposition_command(47.3979706, 8.546283, desired_alt, desired_yaw);
+      RCLCPP_INFO(this->get_logger(), "Отправлена команда перемещения для центрирования.");
     }
+    catch (const tf2::TransformException & ex) {
+    }
+      
+    if ((this->get_clock()->now() - first).seconds() > 10.0)
+    {
+      send_land_command();
+    }
+
+    // Проверяем свежесть TF (stamp должен быть не старше 1с)
+    // rclcpp::Time now = this->get_clock()->now();
+    // rclcpp::Time tf_stamp(transform.header.stamp);
+    // if ((now - tf_stamp).seconds() > 0.31) {
+    //   RCLCPP_WARN(this->get_logger(), "TF от %s к %s устарела (stamp: %f сек назад). Пропускаем.", 
+    //               from_frame.c_str(), to_frame.c_str(), (now - tf_stamp).seconds());
+    // if ((now - tf_stamp).seconds() > 1) {
+    //   // RCLCPP_WARN(this->get_logger(), "TF от %s к %s устарела (stamp: %f сек назад). Пропускаем.", 
+    //               // from_frame.c_str(), to_frame.c_str(), (now - tf_stamp).seconds());
+
+    //   // Отмена reposition: Отправляем hover (hold на месте)
+    //   // крч говорим дрону зависнуть на месте
+    //   send_hover_command();
+    //   // send_hover_command();
+    //   return;
+    // }
+
+    // Если центрировано, отправь посадку (на текущей позиции или с координатами)
+
   }
-}
+
 
   std::string generate_translations(double x, double y, double z)
   {
