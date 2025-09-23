@@ -28,6 +28,11 @@ git clone git@github.com:Robosoft-MIK-2025/star-lander.git
 cd star-lander
 ```
 
+В корне репозитория запустите
+```
+git clone https://github.com/PX4/PX4-Autopilot.git --recursive
+```
+
 Разрешите Docker использовать GUI приложения
 ```bash
 nano ~/.bashrc
